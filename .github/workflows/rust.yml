@@ -1,0 +1,20 @@
+on: [push]
+
+name: test_playfair_cipher
+
+jobs:
+  check:
+    name: playfair_cipher
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install latest stable
+        uses: actions/checkout@v2
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      # `cargo check` command here will use installed `nightly`
+      # as it is set as an "override" for current directory
+      - name: Run cargo test
+        run: cargo test
