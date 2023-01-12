@@ -296,14 +296,16 @@ impl PlayFairKey {
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
     /// # Example
+    ///  
+    /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
     ///
     /// ```
     /// use playfair_cipher::{PlayFairKey, CharNotInKeyError};
     ///
-    /// let pfc = PlayFairKey::new("Secret");
-    /// match pfc.encrypt(&String::from("Even more secret")) {
+    /// let pfc = PlayFairKey::new("playfair example");
+    /// match pfc.encrypt(&String::from("hide the gold in the tree stump")) {
     ///   Ok(crypt) => {
-    ///     assert_eq!(crypt, String::from("SWSOIUTCECRTCS"));
+    ///     assert_eq!(crypt, String::from("BMODZBXDNABEKUDMUIXMMOUVIF"));
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -317,13 +319,15 @@ impl PlayFairKey {
     ///
     /// # Example
     ///
+    /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
+    ///
     /// ```
     /// use playfair_cipher::{PlayFairKey, CharNotInKeyError};
     ///
-    /// let pfc = PlayFairKey::new("Secret");
-    /// match pfc.decrypt("SWSOIUTCECRTCS") {
+    /// let pfc = PlayFairKey::new("playfair example");
+    /// match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
     ///   Ok(crypt) => {
-    ///     assert_eq!(crypt, String::from("EVENMORESECRET"));
+    ///     assert_eq!(crypt, String::from("HIDETHEGOLDINTHETREXESTUMP"));
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };    
