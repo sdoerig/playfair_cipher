@@ -7,7 +7,7 @@ description = "Playfair cipher as described at <https://en.wikipedia.org/wiki/Pl
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
 exclude = [
-    .github
+    ".github",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
