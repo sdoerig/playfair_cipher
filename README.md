@@ -8,9 +8,9 @@ Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_c
 use playfair_cipher::{PlayFairKey, CharNotInKeyError};
 
 let pfc = PlayFairKey::new("playfair example");
-match pfc.encrypt(&String::from("hide the gold in the tree stump")) {
+match pfc.encrypt("hide the gold in the tree stump") {
   Ok(crypt) => {
-    assert_eq!(crypt, String::from("BMODZBXDNABEKUDMUIXMMOUVIF"));
+    assert_eq!(crypt, "BMODZBXDNABEKUDMUIXMMOUVIF");
   }
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
@@ -24,7 +24,7 @@ use playfair_cipher::{PlayFairKey, CharNotInKeyError};
 let pfc = PlayFairKey::new("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
   Ok(crypt) => {
-    assert_eq!(crypt, String::from("HIDETHEGOLDINTHETREXESTUMP"));
+    assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMP");
   }
   Err(e) => panic!("CharNotInKeyError {}", e),
 };

@@ -169,12 +169,6 @@ impl PlayFairKey {
             // _ _ _ _ _
             // _ _ _ _ _
 
-            // exmaple B M
-            // P L A Y F
-            // I R E X M
-            // B C D G H
-            // K N O Q S
-            // T U V W Z
             a_crypted_idx = a_sq_pos.row * 5 + b_sq_pos.column;
             b_crypted_idx = b_sq_pos.row * 5 + a_sq_pos.column;
         } else if a_sq_pos.column == b_sq_pos.column {
@@ -303,9 +297,9 @@ impl PlayFairKey {
     /// use playfair_cipher::{PlayFairKey, CharNotInKeyError};
     ///
     /// let pfc = PlayFairKey::new("playfair example");
-    /// match pfc.encrypt(&String::from("hide the gold in the tree stump")) {
+    /// match pfc.encrypt("hide the gold in the tree stump") {
     ///   Ok(crypt) => {
-    ///     assert_eq!(crypt, String::from("BMODZBXDNABEKUDMUIXMMOUVIF"));
+    ///     assert_eq!(crypt, "BMODZBXDNABEKUDMUIXMMOUVIF");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -327,7 +321,7 @@ impl PlayFairKey {
     /// let pfc = PlayFairKey::new("playfair example");
     /// match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
     ///   Ok(crypt) => {
-    ///     assert_eq!(crypt, String::from("HIDETHEGOLDINTHETREXESTUMP"));
+    ///     assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMP");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };    
