@@ -6,6 +6,9 @@ license = "GNU Affero General Public License v3.0"
 description = "Playfair cipher as described at <https://en.wikipedia.org/wiki/Playfair_cipher>."
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
+exclude = [
+    .github
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
