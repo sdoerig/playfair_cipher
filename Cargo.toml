@@ -2,7 +2,7 @@
 name = "playfair_cipher"
 version = "0.1.0"
 edition = "2021"
-license = "GNU Affero General Public License v3.0"
+license = "AGPL-3.0-or-later"
 description = "Playfair cipher as described at <https://en.wikipedia.org/wiki/Playfair_cipher>."
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
