@@ -1,11 +1,12 @@
 [package]
 name = "playfair_cipher"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "AGPL-3.0-or-later"
 description = "Playfair cipher as described at <https://en.wikipedia.org/wiki/Playfair_cipher>."
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
+keywords = ["Cipher", "Playfair", "Cryptography"]
 exclude = [
     ".github",
 ]
