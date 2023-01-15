@@ -65,10 +65,55 @@ struct CryptResult {
     b: char,
 }
 
+struct Payload {
+    payload: String,
+    counter: usize,
+}
+
 #[derive(PartialEq)]
 enum CryptModus {
     Encrypt,
     Decrypt,
+}
+
+impl Payload {
+    fn new(payload: &str) -> Self {
+        Payload {
+            payload: payload.to_uppercase().replace(' ', "").replace('J', "I"),
+            counter: 0,
+        }
+    }
+}
+
+impl Iterator for Payload {
+    type Item = [char; 2];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.counter < self.payload.len() {
+            let first_member = &self.payload[self.counter..self.counter + 1];
+            // do not overrun string bounderies.
+            let second_member = match self.counter + 2 <= self.payload.len() {
+                true => &self.payload[self.counter + 1..self.counter + 2],
+                false => "X",
+            };
+            //&payload[counter + 1..counter + 2];
+            if first_member == second_member {
+                // first and second are the same, so stuff it
+                let char_list: Vec<char> = first_member.chars().collect();
+
+                self.counter += 1;
+                Some([char_list[0], 'X'])
+            } else {
+                let char_list_first: Vec<char> = first_member.chars().collect();
+                let char_list_second: Vec<char> = second_member.chars().collect();
+
+                self.counter += 2;
+                Some([char_list_first[0], char_list_second[0]])
+            }
+        } else {
+            None
+        }
+    }
 }
 
 impl PlayFairKey {
@@ -272,9 +317,14 @@ impl PlayFairKey {
         payload: &str,
         modus: &CryptModus,
     ) -> Result<String, CharNotInKeyError> {
-        let char_tuples = into_pairs(payload);
+        //let char_tuples = into_pairs(payload);
         let mut payload_encrypted = String::new();
-        for [a, b] in char_tuples {
+        let mut payload_iter = Payload::new(payload);
+        while let digram = payload_iter.next() {
+            let [a, b] = match digram {
+                Some(d) => d,
+                None => break,
+            };
             match self.crypt(a, b, modus) {
                 Ok(digram_crypt) => {
                     payload_encrypted += &String::from(digram_crypt.a);
@@ -332,33 +382,6 @@ impl PlayFairKey {
     }
 }
 
-fn into_pairs(payload: &str) -> Vec<[char; 2]> {
-    let payload_uppercase = payload.to_uppercase().replace(' ', "").replace('J', "I");
-    let mut char_cuples: Vec<[char; 2]> = Vec::new();
-    let mut counter = 0;
-    while counter < payload_uppercase.len() {
-        let first_member = &payload_uppercase[counter..counter + 1];
-        // do not overrun string bounderies.
-        let second_member = match counter + 2 <= payload_uppercase.len() {
-            true => &payload_uppercase[counter + 1..counter + 2],
-            false => "X",
-        };
-        //&payload[counter + 1..counter + 2];
-        if first_member == second_member {
-            // first and second are the same, so stuff it
-            let char_list: Vec<char> = first_member.chars().collect();
-            char_cuples.push([char_list[0], 'X']);
-            counter += 1;
-        } else {
-            let char_list_first: Vec<char> = first_member.chars().collect();
-            let char_list_second: Vec<char> = second_member.chars().collect();
-            char_cuples.push([char_list_first[0], char_list_second[0]]);
-            counter += 2;
-        }
-    }
-    char_cuples
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -412,9 +435,19 @@ mod tests {
     }
 
     #[test]
-    fn test_into_pairs() {
+    fn test_iterator() {
+        let mut payload = Payload::new("my secret message");
+        let mut digrams: Vec<[char; 2]> = Vec::new();
+
+        while let digram = payload.next() {
+            let [a, b] = match digram {
+                Some(d) => d,
+                None => break,
+            };
+            digrams.push([a, b]);
+        }
         assert_eq!(
-            into_pairs("my secret message"),
+            digrams,
             vec![
                 ['M', 'Y'],
                 ['S', 'E'],
