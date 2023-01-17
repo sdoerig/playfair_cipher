@@ -16,6 +16,7 @@ const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
 
 /// Error indicating a character in the given string could not be looked up in the
 /// PlayFairKey. If this occours any operation is stopped.
+/// 
 #[derive(Debug, Clone)]
 pub struct CharNotInKeyError {
     error: String,
@@ -23,7 +24,7 @@ pub struct CharNotInKeyError {
 
 impl fmt::Display for CharNotInKeyError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Oh no, something bad went down")
+        write!(f, "{}", self.error)
     }
 }
 impl Error for CharNotInKeyError {}
@@ -187,12 +188,12 @@ impl PlayFairKey {
         };
         if a_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
-                "{} was not found in {:?}",
+                "Only chars A-Z possible - '{}' was not found in key {:?}",
                 a, &self.key
             )));
         } else if b_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
-                "{} was not found in {:?}",
+                "Only chars A-Z possible - '{}' was not found in key {:?}",
                 b, &self.key
             )));
         }
@@ -320,7 +321,8 @@ impl PlayFairKey {
         //let char_tuples = into_pairs(payload);
         let mut payload_encrypted = String::new();
         let mut payload_iter = Payload::new(payload);
-        while let digram = payload_iter.next() {
+        loop {
+            let digram = payload_iter.next();
             let [a, b] = match digram {
                 Some(d) => d,
                 None => break,
@@ -353,7 +355,13 @@ impl PlayFairKey {
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
-    ///
+    /// // Provocating error . (dot) is not cryptable.
+    /// match pfc.encrypt("..") {
+    ///   Ok(crypt) => {
+    ///     panic!("Must throw a CharNotInKeyError now.");
+    ///   }
+    ///   Err(e) => assert_eq!(e.to_string(), "Only chars A-Z possible - '.' was not found in key ['P', 'L', 'A', 'Y', 'F', 'I', 'R', 'E', 'X', 'M', 'B', 'C', 'D', 'G', 'H', 'K', 'N', 'O', 'Q', 'S', 'T', 'U', 'V', 'W', 'Z']"),
+    /// };
     /// ```
     pub fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
         self.crypt_payload(payload, &CryptModus::Encrypt)
@@ -384,6 +392,7 @@ impl PlayFairKey {
 
 #[cfg(test)]
 mod tests {
+    
     use super::*;
 
     #[test]
@@ -439,7 +448,8 @@ mod tests {
         let mut payload = Payload::new("my secret message");
         let mut digrams: Vec<[char; 2]> = Vec::new();
 
-        while let digram = payload.next() {
+        loop {
+            let digram = payload.next();
             let [a, b] = match digram {
                 Some(d) => d,
                 None => break,
@@ -504,15 +514,14 @@ mod tests {
             row: 43,
             column: 43,
         };
-        let mut counter = 0;
-        for c in pfx.key {
+        for (counter, c) in pfx.key.into_iter().enumerate() {
             let must_be_sqrt_pos = match valid_positions_iter.next() {
                 Some(t) => t,
                 None => &empty_must_be_sqrt_pos,
             };
             let check_sqrt_pos = match pfx.key_map.get(&c) {
                 Some(t) => t,
-                None => &EMPTY_SQ_POS,
+                None => EMPTY_SQ_POS,
             };
             assert_eq!(
                 check_sqrt_pos.row, must_be_sqrt_pos.row,
@@ -524,7 +533,6 @@ mod tests {
                 "column assertion failed at iteration {}",
                 counter
             );
-            counter += 1;
         }
     }
 
@@ -659,6 +667,17 @@ mod tests {
                 assert_eq!(crypt, String::from("cratesio").to_uppercase());
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
+        };
+    }
+    #[test]
+    fn test_throw_error() {
+        let pfc = PlayFairKey::new("rust rules");
+        match pfc.encrypt(&String::from("..")) {
+            Ok(_crypt) => {
+                panic!("Test must throw a CharNotInKeyError but resulted in Ok.")
+            }
+            Err(e) => assert_eq!(e.to_string(), "Only chars A-Z possible - '.' was not found in key ['R', 'U', 'S', 'T', 'L', 'E', 'A', 'B', 'C', 'D', 'F', 'G', 'H', 'I', 'K', 'M', 'N', 'O', 'P', 'Q', 'V', 'W', 'X', 'Y', 'Z']")
+        
         };
     }
 }
