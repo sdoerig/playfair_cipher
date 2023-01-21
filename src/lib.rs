@@ -1,6 +1,11 @@
 //! This is the implentation of the PlayFair cipher as described
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
+//! When using the method encrypt the payload is converted to uppercase
+//! and any character not within the range A..I and K..Z is ignored.
+//! E.g. "I would like 4 tins of jam." becomes "IWOULDLIKETINSOFIAM".
+//! So you don't need to clear off not encryptable characters when using
+//! this library.
 
 use std::collections::HashMap;
 use std::{error::Error, fmt};
@@ -16,7 +21,7 @@ const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
 
 /// Error indicating a character in the given string could not be looked up in the
 /// PlayFairKey. If this occours any operation is stopped.
-/// 
+///
 #[derive(Debug, Clone)]
 pub struct CharNotInKeyError {
     error: String,
@@ -79,8 +84,20 @@ enum CryptModus {
 
 impl Payload {
     fn new(payload: &str) -> Self {
+        let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        while counter < payload_uc.len() {
+            let character = &payload_uc[counter..counter + 1];
+            if character == "J" {
+                payload_cleared += "I";
+            } else if character >= "A" && character <= "Z" {
+                payload_cleared += character;
+            }
+            counter += 1;
+        }
         Payload {
-            payload: payload.to_uppercase().replace(' ', "").replace('J', "I"),
+            payload: payload_cleared,
             counter: 0,
         }
     }
@@ -97,6 +114,7 @@ impl Iterator for Payload {
                 true => &self.payload[self.counter + 1..self.counter + 2],
                 false => "X",
             };
+
             //&payload[counter + 1..counter + 2];
             if first_member == second_member {
                 // first and second are the same, so stuff it
@@ -355,13 +373,6 @@ impl PlayFairKey {
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
-    /// // Provocating error . (dot) is not cryptable.
-    /// match pfc.encrypt("..") {
-    ///   Ok(crypt) => {
-    ///     panic!("Must throw a CharNotInKeyError now.");
-    ///   }
-    ///   Err(e) => assert_eq!(e.to_string(), "Only chars A-Z possible - '.' was not found in key ['P', 'L', 'A', 'Y', 'F', 'I', 'R', 'E', 'X', 'M', 'B', 'C', 'D', 'G', 'H', 'K', 'N', 'O', 'Q', 'S', 'T', 'U', 'V', 'W', 'Z']"),
-    /// };
     /// ```
     pub fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
         self.crypt_payload(payload, &CryptModus::Encrypt)
@@ -392,8 +403,15 @@ impl PlayFairKey {
 
 #[cfg(test)]
 mod tests {
-    
+
     use super::*;
+
+    #[test]
+    fn test_payload() {
+        let payload = Payload::new("I would like 4 tins of jam.");
+        assert_eq!(payload.payload, "IWOULDLIKETINSOFIAM");
+        // becomes "IWOULDLIKETINSOFIAM"
+    }
 
     #[test]
     fn test_key_gen_empty_key() {
@@ -667,17 +685,6 @@ mod tests {
                 assert_eq!(crypt, String::from("cratesio").to_uppercase());
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
-        };
-    }
-    #[test]
-    fn test_throw_error() {
-        let pfc = PlayFairKey::new("rust rules");
-        match pfc.encrypt(&String::from("..")) {
-            Ok(_crypt) => {
-                panic!("Test must throw a CharNotInKeyError but resulted in Ok.")
-            }
-            Err(e) => assert_eq!(e.to_string(), "Only chars A-Z possible - '.' was not found in key ['R', 'U', 'S', 'T', 'L', 'E', 'A', 'B', 'C', 'D', 'F', 'G', 'H', 'I', 'K', 'M', 'N', 'O', 'P', 'Q', 'V', 'W', 'X', 'Y', 'Z']")
-        
         };
     }
 }
