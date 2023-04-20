@@ -5,7 +5,7 @@ Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_c
 ## Encrypt
 
 ```rust
-use playfair_cipher::{PlayFairKey, CharNotInKeyError};
+use playfair_cipher::{ciphers::PlayFairKey, errors::CharNotInKeyError};
 
 let pfc = PlayFairKey::new("playfair example");
 match pfc.encrypt("hide the gold in the tree stump") {
@@ -19,7 +19,8 @@ match pfc.encrypt("hide the gold in the tree stump") {
 ## Decrypt
 
 ```rust
-use playfair_cipher::{PlayFairKey, CharNotInKeyError};
+use playfair_cipher::ciphers::PlayFairKey as PlayFairKey;
+use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
 
 let pfc = PlayFairKey::new("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
@@ -27,7 +28,7 @@ match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
     assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMP");
   }
   Err(e) => panic!("CharNotInKeyError {}", e),
-};
+};    
 ```
 
 That's it.
