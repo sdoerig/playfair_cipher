@@ -39,7 +39,7 @@ impl Payload {
             let character = &payload_uc[counter..counter + 1];
             if character == "J" {
                 payload_cleared += "I";
-            } else if character >= "A" && character <= "Z" {
+            } else if ("A"..="Z").contains(&character) {
                 payload_cleared += character;
             }
             counter += 1;

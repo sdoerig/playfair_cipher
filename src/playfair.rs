@@ -1,24 +1,101 @@
 //! This is the implentation of the PlayFair cipher as described
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
-//! When using the method encrypt the payload is converted to uppercase
-//! and any character not within the range A..I and K..Z is ignored.
-//! E.g. "I would like 4 tins of jam." becomes "IWOULDLIKETINSOFIAM".
-//! So you don't need to clear off not encryptable characters when using
-//! this library.
-//!
 use crate::errors::CharNotInKeyError;
 
 use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
 
-use super::ciphers::PlayFairKey;
-
-const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
+pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
     column: 42,
     row: 42,
 };
 
+use std::collections::HashMap;
+
+const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+pub(crate) const ROW_LENGTH: u8 = 5;
+const KEY_LENGTH: usize = 25;
+
+/// Struct represents a PlayFaire Cypher. It's holding the key and the
+/// position of any character in the key.
+///
+#[derive(Debug)]
+pub struct PlayFairKey {
+    /// PlayFair 5*5 matrix
+    ///
+    pub(crate) key: Vec<char>,
+    pub(crate) key_map: HashMap<char, SquarePosition>,
+}
+
 impl PlayFairKey {
+    /// Constructs a new PlayFaire cipher.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
+    ///
+    /// let pfc = PlayFairKey::new("Secret");
+    /// ```
+    pub fn new(key: &str) -> Self {
+        let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + KEY_CARS;
+
+        let mut temp_key = String::with_capacity(KEY_LENGTH);
+        let mut counter = 0;
+        // Position counter reflects the position in the
+        // imaginary 5*5 square. So to be consistent, it start from 0
+        let mut row_counter = 0;
+        let mut col_counter = 0;
+        let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+
+        while counter < raw_key.len() && temp_key.len() < KEY_LENGTH {
+            if col_counter > 4 {
+                col_counter = 0;
+                row_counter += 1;
+            }
+
+            let temp_key_char = &raw_key[counter..counter + 1];
+            counter += 1;
+            if temp_key.contains(temp_key_char) {
+                continue;
+            } else {
+                temp_key += temp_key_char;
+                let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+
+                key_map.insert(
+                    match temp_key_char_vec.first() {
+                        Some(k) => *k,
+                        None => '*',
+                    },
+                    SquarePosition {
+                        row: row_counter,
+                        column: col_counter,
+                    },
+                );
+                col_counter += 1;
+            }
+        }
+
+        PlayFairKey {
+            key: temp_key.chars().collect(),
+            key_map,
+        }
+    }
+}
+
+pub(crate) trait Crypt {
+    fn crypt_payload(&self, payload: &str, modus: &CryptModus)
+        -> Result<String, CharNotInKeyError>;
+    fn crypt(&self, a: char, b: char, modus: &CryptModus)
+        -> Result<CryptResult, CharNotInKeyError>;
+}
+
+pub trait Cypher {
+    fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError>;
+    fn decrypt(&self, payload: &str) -> Result<String, CharNotInKeyError>;
+}
+
+impl Crypt for PlayFairKey {
     fn crypt(
         &self,
         a: char,
@@ -62,8 +139,8 @@ impl PlayFairKey {
             // _ _ _ _ _
             // _ _ _ _ _
 
-            a_crypted_idx = a_sq_pos.row * 5 + b_sq_pos.column;
-            b_crypted_idx = b_sq_pos.row * 5 + a_sq_pos.column;
+            a_crypted_idx = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
+            b_crypted_idx = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
         } else if a_sq_pos.column == b_sq_pos.column {
             // in column mode
             // example 1
@@ -85,25 +162,25 @@ impl PlayFairKey {
                     // In the last row - so going back to row 0
                     a_crypted_idx = a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row + 1) * 5 + a_sq_pos.column
+                    a_crypted_idx = (a_sq_pos.row + 1) * ROW_LENGTH + a_sq_pos.column
                 }
                 if b_sq_pos.row == 4 {
                     // In the last row - so going back to row 0
                     b_crypted_idx = b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row + 1) * 5 + b_sq_pos.column
+                    b_crypted_idx = (b_sq_pos.row + 1) * ROW_LENGTH + b_sq_pos.column
                 }
             } else {
                 // Decrypting
                 if a_sq_pos.row == 0 {
                     a_crypted_idx = 20 + a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row - 1) * 5 + a_sq_pos.column;
+                    a_crypted_idx = (a_sq_pos.row - 1) * ROW_LENGTH + a_sq_pos.column;
                 }
                 if b_sq_pos.row == 0 {
                     b_crypted_idx = 20 + b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row - 1) * 5 + b_sq_pos.column;
+                    b_crypted_idx = (b_sq_pos.row - 1) * ROW_LENGTH + b_sq_pos.column;
                 }
             }
         } else if a_sq_pos.row == b_sq_pos.row {
@@ -122,27 +199,27 @@ impl PlayFairKey {
             if modus == &CryptModus::Encrypt {
                 // moving right
                 if a_sq_pos.column == 4 {
-                    a_crypted_idx = a_sq_pos.row * 5;
+                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * 5 + a_sq_pos.column + 1;
+                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column + 1;
                 }
                 if b_sq_pos.column == 4 {
-                    b_crypted_idx = b_sq_pos.row * 5;
+                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * 5 + b_sq_pos.column + 1;
+                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column + 1;
                 }
             } else {
                 // decrypt
                 // moving left
                 if a_sq_pos.column == 0 {
-                    a_crypted_idx = (a_sq_pos.row * 5) + 4;
+                    a_crypted_idx = (a_sq_pos.row * ROW_LENGTH) + 4;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * 5 + a_sq_pos.column - 1;
+                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column - 1;
                 }
                 if b_sq_pos.column == 0 {
-                    b_crypted_idx = (b_sq_pos.row * 5) + 4;
+                    b_crypted_idx = (b_sq_pos.row * ROW_LENGTH) + 4;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * 5 + b_sq_pos.column - 1;
+                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column - 1;
                 }
             }
         }
@@ -184,7 +261,9 @@ impl PlayFairKey {
         }
         Ok(payload_encrypted)
     }
+}
 
+impl Cypher for PlayFairKey {
     /// Encrypts a string. Note as the PlayFair cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
@@ -193,7 +272,8 @@ impl PlayFairKey {
     /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
     ///
     /// ```
-    /// use playfair_cipher::{ciphers::PlayFairKey, errors::CharNotInKeyError};
+    /// use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
+    /// use crate::playfair_cipher::playfair::Cypher;
     ///
     /// let pfc = PlayFairKey::new("playfair example");
     /// match pfc.encrypt("hide the gold in the tree stump") {
@@ -203,7 +283,7 @@ impl PlayFairKey {
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
     /// ```
-    pub fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
+    fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
         self.crypt_payload(payload, &CryptModus::Encrypt)
     }
 
@@ -214,8 +294,9 @@ impl PlayFairKey {
     /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
     ///
     /// ```
-    /// use playfair_cipher::ciphers::PlayFairKey as PlayFairKey;
+    /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
     /// use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
+    /// use crate::playfair_cipher::playfair::Cypher;
     ///
     /// let pfc = PlayFairKey::new("playfair example");
     /// match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
@@ -226,7 +307,7 @@ impl PlayFairKey {
     /// };    
     ///
     /// ```
-    pub fn decrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
+    fn decrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
         self.crypt_payload(payload, &CryptModus::Decrypt)
     }
 }
