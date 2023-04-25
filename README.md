@@ -24,7 +24,7 @@ match pfc.encrypt("hide the gold in the tree stump") {
 ```rust
 use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
 use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
-use crate::playfair_cipher::playfair::Cypher;
+use playfair_cipher::playfair::Cypher;
 
 let pfc = PlayFairKey::new("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
@@ -42,7 +42,7 @@ Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Four-squar
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use crate::playfair_cipher::playfair::Cypher;
+use playfair_cipher::playfair::Cypher;
 
 let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
 match fsq.encrypt("joe") {

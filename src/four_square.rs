@@ -26,61 +26,15 @@ impl FourSquare {
             bottom_right: PlayFairKey::new(""),
         }
     }
+}
 
-    fn encrypt_digram(&self, a: char, b: char) -> Result<CryptResult, CharNotInKeyError> {
-        // Working with this key matrix:
-        // abcde EXAMP
-        // fghik LBCDF
-        // lmnop GHIKN
-        // qrstu OQRST
-        // vwxyz UVWYZ
-        //
-        // KEYWO abcde
-        // RDABC fghik
-        // FGHIL lmnop
-        // MNPQS qrstu
-        // TUVXZ vwxyz
-        //
-        // encrypting JOE -> DIAZ
-        // a.I -> row 1, col 3  encrypt a.I.row 1, b.O.col 3 -> 1 * 5 + 3 =  8 (D)
-        // b.O -> row 2, col 3  encrypt b.O.row 2, a.J.col 3 -> 2 * 5 + 3 = 13 (I)
-        //
-        let a_sq_pos = match self.top_left.key_map.get(&a) {
-            Some(p) => p,
-            None => EMPTY_SQ_POS,
-        };
-        let b_sq_pos = match self.bottom_right.key_map.get(&b) {
-            Some(p) => p,
-            None => EMPTY_SQ_POS,
-        };
-        if a_sq_pos.column == EMPTY_SQ_POS.column {
-            return Err(CharNotInKeyError::new(format!(
-                "Only chars A-Z possible - '{}' was not found in key {:?}",
-                a, &self.top_left.key
-            )));
-        } else if b_sq_pos.column == EMPTY_SQ_POS.column {
-            return Err(CharNotInKeyError::new(format!(
-                "Only chars A-Z possible - '{}' was not found in key {:?}",
-                b, &self.bottom_right.key
-            )));
-        }
-        let a_crypted_idx: u8 = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
-        let b_crypted_idx: u8 = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
-        let a_crypted = match self.top_right.key.get(a_crypted_idx as usize) {
-            Some(s) => *s,
-            None => '*',
-        };
-        let b_crypted = match self.bottom_left.key.get(b_crypted_idx as usize) {
-            Some(s) => *s,
-            None => '*',
-        };
-        Ok(CryptResult {
-            a: a_crypted,
-            b: b_crypted,
-        })
-    }
-
-    fn decrypt_digram(&self, a: char, b: char) -> Result<CryptResult, CharNotInKeyError> {
+impl Crypt for FourSquare {
+    fn crypt(
+        &self,
+        a: char,
+        b: char,
+        modus: &crate::structs::CryptModus,
+    ) -> Result<crate::structs::CryptResult, crate::errors::CharNotInKeyError> {
         // Working with this key matrix:
         // abcde EXAMP
         // fghik LBCDF
@@ -98,18 +52,34 @@ impl FourSquare {
         // a.D -> row 1, col 3  decrypt a.I.row 1, b.O.col 3 -> 1 * 5 + 3 =  8 (I)
         // b.I -> row 2, col 3  decrypt b.O.row 2, a.J.col 3 -> 2 * 5 + 3 = 13 (O)
         //
-        let a_sq_pos = match self.top_right.key_map.get(&a) {
+        let (top_right_hash_map, bottom_left_hash_map, top_left_key, bottom_right_key) = match modus
+        {
+            CryptModus::Encrypt => (
+                &self.top_left.key_map,
+                &self.bottom_right.key_map,
+                &self.top_right.key,
+                &self.bottom_left.key,
+            ),
+            CryptModus::Decrypt => (
+                &self.top_right.key_map,
+                &self.bottom_left.key_map,
+                &self.top_left.key,
+                &self.bottom_right.key,
+            ),
+        };
+
+        let a_sq_pos = match top_right_hash_map.get(&a) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
-        let b_sq_pos = match self.bottom_left.key_map.get(&b) {
+        let b_sq_pos = match bottom_left_hash_map.get(&b) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
         if a_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
                 "Only chars A-Z possible - '{}' was not found in key {:?}",
-                a, &self.top_right.key
+                a, &top_right_hash_map
             )));
         } else if b_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
@@ -119,11 +89,11 @@ impl FourSquare {
         }
         let a_crypted_idx: u8 = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
         let b_crypted_idx: u8 = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
-        let a_crypted = match self.top_left.key.get(a_crypted_idx as usize) {
+        let a_crypted = match top_left_key.get(a_crypted_idx as usize) {
             Some(s) => *s,
             None => '*',
         };
-        let b_crypted = match self.bottom_right.key.get(b_crypted_idx as usize) {
+        let b_crypted = match bottom_right_key.get(b_crypted_idx as usize) {
             Some(s) => *s,
             None => '*',
         };
@@ -131,21 +101,6 @@ impl FourSquare {
             a: a_crypted,
             b: b_crypted,
         })
-    }
-}
-
-impl Crypt for FourSquare {
-    fn crypt(
-        &self,
-        a: char,
-        b: char,
-        modus: &crate::structs::CryptModus,
-    ) -> Result<crate::structs::CryptResult, crate::errors::CharNotInKeyError> {
-        match modus {
-            CryptModus::Encrypt => self.encrypt_digram(a, b),
-
-            CryptModus::Decrypt => self.decrypt_digram(a, b),
-        }
     }
 
     fn crypt_payload(
@@ -184,7 +139,7 @@ impl Cypher for FourSquare {
     ///
     /// ```
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-    /// use crate::playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::playfair::Cypher;
     ///
     /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
     /// match fsq.encrypt("joe") {
@@ -206,7 +161,7 @@ impl Cypher for FourSquare {
     ///
     /// ```
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-    /// use crate::playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::playfair::Cypher;
     ///
     /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
     /// match fsq.decrypt("DIAZ") {
