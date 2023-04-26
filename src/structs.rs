@@ -1,3 +1,5 @@
+use crate::playfair;
+
 /// For each character from the key, its position within the imaged square stored in
 /// this struct.
 /// Having this square:
@@ -48,6 +50,30 @@ impl Payload {
             payload: payload_cleared,
             counter: 0,
         }
+    }
+    pub(crate) fn crypt_payload(
+        &mut self,
+        cipher: &impl playfair::Crypt,
+        modus: &crate::structs::CryptModus,
+    ) -> Result<String, crate::errors::CharNotInKeyError> {
+        //let char_tuples = into_pairs(payload);
+        let mut payload_encrypted = String::new();
+
+        loop {
+            let digram = self.next();
+            let [a, b] = match digram {
+                Some(d) => d,
+                None => break,
+            };
+            match cipher.crypt(a, b, modus) {
+                Ok(digram_crypt) => {
+                    payload_encrypted += &String::from(digram_crypt.a);
+                    payload_encrypted += &String::from(digram_crypt.b);
+                }
+                Err(e) => return Err(e),
+            };
+        }
+        Ok(payload_encrypted)
     }
 }
 

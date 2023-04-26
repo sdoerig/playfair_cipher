@@ -36,7 +36,7 @@ match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
 ```
 
 # four_square_ciper
-Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Four-square_cipher) - nothing special, nothing useful, just for fun.
+Implementation of the [FourSquare cipher](https://en.wikipedia.org/wiki/Four-square_cipher) - nothing special, nothing useful, just for fun.
 
 ## Encrypt
 
