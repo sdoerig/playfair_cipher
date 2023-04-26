@@ -10,20 +10,36 @@ use crate::{
 
 use super::playfair::{Crypt, Cypher, PlayFairKey};
 
+/// Four square cipher works as its name suggests with those 4 squares.
+/// E.g. having this key matrix
+///
+/// abcde EXAMP
+/// fghik LBCDF
+/// lmnop GHIKN
+/// qrstu OQRST
+/// vwxyz UVWYZ
+///
+/// KEYWO abcde
+/// RDABC fghik
+/// FGHIL lmnop
+/// MNPQS qrstu
+/// TUVXZ vwxyz
+///
+///
 pub struct FourSquare {
-    top_left: PlayFairKey,
+    // Within the struct, top left and bottom right square are represented by the standard
+    // as they are the same
     top_right: PlayFairKey,
     bottom_left: PlayFairKey,
-    bottom_right: PlayFairKey,
+    standard_key: PlayFairKey,
 }
 
 impl FourSquare {
     pub fn new(key0: &str, key1: &str) -> Self {
         FourSquare {
-            top_left: PlayFairKey::new(""),
             top_right: PlayFairKey::new(key0),
             bottom_left: PlayFairKey::new(key1),
-            bottom_right: PlayFairKey::new(""),
+            standard_key: PlayFairKey::new(""),
         }
     }
 }
@@ -55,16 +71,16 @@ impl Crypt for FourSquare {
         let (top_right_hash_map, bottom_left_hash_map, top_left_key, bottom_right_key) = match modus
         {
             CryptModus::Encrypt => (
-                &self.top_left.key_map,
-                &self.bottom_right.key_map,
+                &self.standard_key.key_map,
+                &self.standard_key.key_map,
                 &self.top_right.key,
                 &self.bottom_left.key,
             ),
             CryptModus::Decrypt => (
                 &self.top_right.key_map,
                 &self.bottom_left.key_map,
-                &self.top_left.key,
-                &self.bottom_right.key,
+                &self.standard_key.key,
+                &self.standard_key.key,
             ),
         };
 
@@ -108,24 +124,9 @@ impl Crypt for FourSquare {
         payload: &str,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
-        //let char_tuples = into_pairs(payload);
-        let mut payload_encrypted = String::new();
         let mut payload_iter = Payload::new(payload);
-        loop {
-            let digram = payload_iter.next();
-            let [a, b] = match digram {
-                Some(d) => d,
-                None => break,
-            };
-            match self.crypt(a, b, modus) {
-                Ok(digram_crypt) => {
-                    payload_encrypted += &String::from(digram_crypt.a);
-                    payload_encrypted += &String::from(digram_crypt.b);
-                }
-                Err(e) => return Err(e),
-            };
-        }
-        Ok(payload_encrypted)
+
+        payload_iter.crypt_payload(self, modus)
     }
 }
 
@@ -201,19 +202,13 @@ mod tests {
     fn test_four_square_creation_key() {
         let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
         assert!(
-            four_square.top_left.key
+            four_square.standard_key.key
                 == vec![
                     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
                     'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
                 ]
         );
-        assert!(
-            four_square.bottom_right.key
-                == vec![
-                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-                    'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-                ]
-        );
+
         assert!(
             four_square.top_right.key
                 == vec![
