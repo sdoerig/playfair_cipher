@@ -123,8 +123,8 @@ impl Cypher for TwoSquare {
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::playfair::Cypher;
     ///
-    /// let fsq = TwoSquare::new("EXAMPLE", "KEYWORD");
-    /// match fsq.encrypt("joe") {
+    /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+    /// match tsq.encrypt("joe") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "NYMT");
     ///   }
@@ -145,8 +145,8 @@ impl Cypher for TwoSquare {
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::playfair::Cypher;
     ///
-    /// let fsq = TwoSquare::new("EXAMPLE", "KEYWORD");
-    /// match fsq.decrypt("NYMT") {
+    /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+    /// match tsq.decrypt("NYMT") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "IOEX");
     ///   }

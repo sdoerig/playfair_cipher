@@ -67,6 +67,38 @@ match fsq.decrypt("DIAZ") {
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
+# two_square_ciper
+Implementation of the [TwoSquare cipher](https://en.wikipedia.org/wiki/Two-square_cipher) - nothing special, nothing useful, just for fun.
+
+## Encrypt
+
+```rust
+use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+use playfair_cipher::playfair::Cypher;
+
+let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+match tsq.encrypt("joe") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "NYMT");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+
+## Decrypt
+
+```rust
+use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+use playfair_cipher::playfair::Cypher;
+
+let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+match tsq.decrypt("NYMT") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "IOEX");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
 
 That's it.
 
