@@ -56,7 +56,6 @@ impl Payload {
         cipher: &impl playfair::Crypt,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
-        //let char_tuples = into_pairs(payload);
         let mut payload_encrypted = String::new();
 
         loop {
