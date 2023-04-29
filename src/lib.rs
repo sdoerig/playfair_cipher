@@ -13,3 +13,4 @@ pub mod errors;
 pub mod four_square;
 pub mod playfair;
 mod structs;
+pub mod two_square;
