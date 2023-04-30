@@ -1,7 +1,20 @@
+# General
+
+The crate contains the playfair, the two square and the four square cipers.
+Note all of the are pre computer cipers. Do not feel like
+protecting data of any value with them. Both are crackable
+in very short time.
+
+When using the method encrypt the payload is converted to uppercase
+and any character not within the range A..I and K..Z is ignored.
+E.g. "I would like 4 tins of jam." becomes "IWOULDLIKETINSOFIAM".
+So you don't need to clear off not encryptable characters when using
+this library.
+
 # playfair_cipher
 Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_cipher) - nothing special, nothing useful, just for fun. 
 
-Do not use them to crypt data of any value, since both of them are pre computer ciphers and so today very vulnerable.
+
 
 
 ## Encrypt

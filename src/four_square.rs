@@ -230,7 +230,7 @@ mod tests {
         let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
         match four_square.encrypt("The quick red fox jumps over the lazy brown dog.") {
             Ok(s) => assert!(s == "RBESSCPATEEBIXFQNGSHZKSNFYGKYZXNHXKYHB"),
-            Err(_) => todo!(),
+            Err(e) => panic!("CharNotInKeyError {}", e),
         }
     }
 
@@ -239,7 +239,7 @@ mod tests {
         let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
         match four_square.decrypt("RBESSCPATEEBIXFQNGSHZKSNFYGKYZXNHXKYHB") {
             Ok(s) => assert!(s == "THEQUICKREDFOXIUMPSOVERTHELAZYBROWNDOG"),
-            Err(_) => todo!(),
+            Err(e) => panic!("CharNotInKeyError {}", e),
         }
     }
 }

@@ -1,6 +1,6 @@
-//! The crate contains the playfair and the four square cipers.
-//! Note both of the are pre computer cipers. Do not feel like
-//! protecting data of any value with them. Both are crackable
+//! The crate contains the playfair, the two square and the four square cipers.
+//! Note all of the are pre computer cipers. Do not feel like
+//! protecting data of any value with them. Any of them is crackable
 //! in very short time.
 //!
 //! When using the method encrypt the payload is converted to uppercase

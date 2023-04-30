@@ -201,9 +201,9 @@ mod tests {
     #[test]
     fn test_two_square_encrypt() {
         let two_square = TwoSquare::new("EXAMPLE", "KEYWORD");
-        match two_square.encrypt("helpmeobiwankenobi") {
+        match two_square.encrypt("HELPMEOBIWANKENOBI") {
             Ok(s) => assert!(&s == "HECMXWSRKYXPHWNODG", "{}", s),
-            Err(_) => todo!(),
+            Err(e) => panic!("CharNotInKeyError {}", e),
         }
     }
 
@@ -212,7 +212,25 @@ mod tests {
         let two_square = TwoSquare::new("EXAMPLE", "KEYWORD");
         match two_square.decrypt("HECMXWSRKYXPHWNODG") {
             Ok(s) => assert!(s == "HELPMEOBIWANKENOBI"),
-            Err(_) => todo!(),
+            Err(e) => panic!("CharNotInKeyError {}", e),
+        }
+    }
+
+    #[test]
+    fn test_two_square_encrypt_second() {
+        let two_square = TwoSquare::new("UEMFUI", "NIHKGDTMSXSEMLGIFW");
+        match two_square.encrypt("HELPMEOBIWANKENOBI") {
+            Ok(s) => assert!(&s == "HENOUFHQFAANHLLPBI", "{}", s),
+            Err(e) => panic!("CharNotInKeyError {}", e),
+        }
+    }
+
+    #[test]
+    fn test_two_square_decrypt_second() {
+        let two_square = TwoSquare::new("UEMFUI", "NIHKGDTMSXSEMLGIFW");
+        match two_square.decrypt("HENOUFHQFAANHLLPBI") {
+            Ok(s) => assert!(&s == "HELPMEOBIWANKENOBI", "{}", s),
+            Err(e) => panic!("CharNotInKeyError {}", e),
         }
     }
 }
