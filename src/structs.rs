@@ -1,15 +1,16 @@
-use crate::playfair;
+use crate::cryptable::Crypt;
 
-/// For each character from the key, its position within the imaged square stored in
-/// this struct.
-/// Having this square:
-///        columns
-///        0 1 2 3 4
-///  row 0 _ _ _ _ _
-///  row 1 _ _ _ _ _
-///  row 2 _ _ _ _ _
-///  row 3 _ _ _ _ _
-///  row 4 _ _ _ _ _
+// For each character from the key, its position within the imaged square stored in
+// this struct.
+// Having this square
+//
+//        columns
+//        0 1 2 3 4
+//  row 0 _ _ _ _ _
+//  row 1 _ _ _ _ _
+//  row 2 _ _ _ _ _
+//  row 3 _ _ _ _ _
+//  row 4 _ _ _ _ _
 #[derive(Debug)]
 pub(crate) struct SquarePosition {
     pub row: u8,
@@ -53,7 +54,7 @@ impl Payload {
     }
     pub(crate) fn crypt_payload(
         &mut self,
-        cipher: &impl playfair::Crypt,
+        cipher: &impl Crypt,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
         let mut payload_encrypted = String::new();

@@ -9,6 +9,7 @@
 //! So you don't need to clear off not encryptable characters when using
 //! this library.
 //!
+pub mod cryptable;
 pub mod errors;
 pub mod four_square;
 pub mod playfair;

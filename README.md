@@ -1,8 +1,8 @@
 # General
 
 The crate contains the playfair, the two square and the four square cipers.
-Note all of the are pre computer cipers. Do not feel like
-protecting data of any value with them. Both are crackable
+Note all are pre computer cipers. Do not feel like
+protecting data of any value with them. Any of those are crackable
 in very short time.
 
 When using the method encrypt the payload is converted to uppercase
@@ -21,7 +21,7 @@ Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_c
 
 ```rust
 use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-use crate::playfair_cipher::playfair::Cypher;
+use use playfair_cipher::cryptable::Cypher;
 
 let pfc = PlayFairKey::new("playfair example");
 match pfc.encrypt("hide the gold in the tree stump") {
@@ -37,7 +37,7 @@ match pfc.encrypt("hide the gold in the tree stump") {
 ```rust
 use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
 use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
-use playfair_cipher::playfair::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
 let pfc = PlayFairKey::new("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
@@ -55,7 +55,7 @@ Implementation of the [FourSquare cipher](https://en.wikipedia.org/wiki/Four-squ
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::playfair::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
 let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
 match fsq.encrypt("joe") {
@@ -70,7 +70,7 @@ match fsq.encrypt("joe") {
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use crate::playfair_cipher::playfair::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
 let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
 match fsq.decrypt("DIAZ") {
@@ -87,7 +87,7 @@ Implementation of the [TwoSquare cipher](https://en.wikipedia.org/wiki/Two-squar
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::playfair::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
 let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
 match tsq.encrypt("joe") {
@@ -102,7 +102,7 @@ match tsq.encrypt("joe") {
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::playfair::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
 let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
 match tsq.decrypt("NYMT") {
