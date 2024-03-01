@@ -3,12 +3,13 @@
 //!
 
 use crate::{
+    cryptable::{Crypt, Cypher},
     errors::CharNotInKeyError,
     playfair::{EMPTY_SQ_POS, ROW_LENGTH},
     structs::{CryptModus, CryptResult, Payload},
 };
 
-use super::playfair::{Crypt, Cypher, PlayFairKey};
+use super::playfair::PlayFairKey;
 
 /// Two square cipher works as its name suggests with those 4 squares.
 /// E.g. having this key matrix
@@ -121,7 +122,7 @@ impl Cypher for TwoSquare {
     ///
     /// ```
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-    /// use playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;;
     ///
     /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
     /// match tsq.encrypt("joe") {
@@ -143,7 +144,7 @@ impl Cypher for TwoSquare {
     ///
     /// ```
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-    /// use playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;
     ///
     /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
     /// match tsq.decrypt("NYMT") {

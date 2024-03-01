@@ -3,12 +3,13 @@
 //!
 
 use crate::{
+    cryptable::{Crypt, Cypher},
     errors::CharNotInKeyError,
     playfair::{EMPTY_SQ_POS, ROW_LENGTH},
     structs::{CryptModus, CryptResult, Payload},
 };
 
-use super::playfair::{Crypt, Cypher, PlayFairKey};
+use super::playfair::PlayFairKey;
 
 /// Four square cipher works as its name suggests with those 4 squares.
 /// E.g. having this key matrix
@@ -140,7 +141,7 @@ impl Cypher for FourSquare {
     ///
     /// ```
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-    /// use playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;
     ///
     /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
     /// match fsq.encrypt("joe") {
@@ -162,7 +163,7 @@ impl Cypher for FourSquare {
     ///
     /// ```
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-    /// use playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;
     ///
     /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
     /// match fsq.decrypt("DIAZ") {

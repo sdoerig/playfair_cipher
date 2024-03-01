@@ -1,6 +1,7 @@
 //! This is the implentation of the PlayFair cipher as described
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
+use crate::cryptable::{Crypt, Cypher};
 use crate::errors::CharNotInKeyError;
 
 use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
@@ -81,18 +82,6 @@ impl PlayFairKey {
             key_map,
         }
     }
-}
-
-pub(crate) trait Crypt {
-    fn crypt_payload(&self, payload: &str, modus: &CryptModus)
-        -> Result<String, CharNotInKeyError>;
-    fn crypt(&self, a: char, b: char, modus: &CryptModus)
-        -> Result<CryptResult, CharNotInKeyError>;
-}
-
-pub trait Cypher {
-    fn encrypt(&self, payload: &str) -> Result<String, CharNotInKeyError>;
-    fn decrypt(&self, payload: &str) -> Result<String, CharNotInKeyError>;
 }
 
 impl Crypt for PlayFairKey {
@@ -258,7 +247,7 @@ impl Cypher for PlayFairKey {
     ///
     /// ```
     /// use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-    /// use crate::playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;
     ///
     /// let pfc = PlayFairKey::new("playfair example");
     /// match pfc.encrypt("hide the gold in the tree stump") {
@@ -281,7 +270,7 @@ impl Cypher for PlayFairKey {
     /// ```
     /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
     /// use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
-    /// use crate::playfair_cipher::playfair::Cypher;
+    /// use playfair_cipher::cryptable::Cypher;
     ///
     /// let pfc = PlayFairKey::new("playfair example");
     /// match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
