@@ -4,7 +4,7 @@
 use crate::cryptable::{Crypt, Cypher};
 use crate::errors::CharNotInKeyError;
 
-use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
+use crate::structs::{CryptModus, CryptResult, Payload, PayloadAdapter, SquarePosition};
 
 pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
     column: 42,
@@ -14,6 +14,7 @@ pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
 use std::collections::HashMap;
 
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 pub(crate) const ROW_LENGTH: u8 = 5;
 const KEY_LENGTH: usize = 25;
 
@@ -26,6 +27,7 @@ pub struct PlayFairKey {
     ///
     pub(crate) key: Vec<char>,
     pub(crate) key_map: HashMap<char, SquarePosition>,
+    pub(crate) row_len: u8,
 }
 
 impl PlayFairKey {
@@ -39,48 +41,100 @@ impl PlayFairKey {
     /// let pfc = PlayFairKey::new("Secret");
     /// ```
     pub fn new(key: &str) -> Self {
-        let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + KEY_CARS;
+        create_play_fair_key(key, KEY_CARS)
+    }
+    pub fn new_with_digits(key: &str) -> Self {
+        create_play_fair_key(key, KEY_CARS_A_TO_Z_0_TO_9)
+    }
 
-        let mut temp_key = String::with_capacity(KEY_LENGTH);
-        let mut counter = 0;
-        // Position counter reflects the position in the
-        // imaginary 5*5 square. So to be consistent, it start from 0
-        let mut row_counter = 0;
-        let mut col_counter = 0;
-        let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+    pub(crate) fn payload(&self, payload: &str) -> String {
+        if self.row_len == 4 {
+            PlayFairKey::payload_5_to_5(payload)
+        } else {
+            PlayFairKey::payload_6_to_6(payload)
+        }
+    }
 
-        while counter < raw_key.len() && temp_key.len() < KEY_LENGTH {
-            if col_counter > 4 {
-                col_counter = 0;
-                row_counter += 1;
+    fn payload_6_to_6(payload: &str) -> String {
+        let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        while counter < payload_uc.len() {
+            let character = &payload_uc[counter..counter + 1];
+            if ("A"..="Z").contains(&character) || ("0"..="9").contains(&character) {
+                payload_cleared += character;
             }
-
-            let temp_key_char = &raw_key[counter..counter + 1];
             counter += 1;
-            if temp_key.contains(temp_key_char) {
-                continue;
-            } else {
-                temp_key += temp_key_char;
-                let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+        }
+        payload_cleared
+    }
 
-                key_map.insert(
-                    match temp_key_char_vec.first() {
-                        Some(k) => *k,
-                        None => '*',
-                    },
-                    SquarePosition {
-                        row: row_counter,
-                        column: col_counter,
-                    },
-                );
-                col_counter += 1;
+    fn payload_5_to_5(payload: &str) -> String {
+        let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        while counter < payload_uc.len() {
+            let character = &payload_uc[counter..counter + 1];
+            if character == "J" {
+                payload_cleared += "I";
+            } else if ("A"..="Z").contains(&character) {
+                payload_cleared += character;
             }
+            counter += 1;
+        }
+        payload_cleared
+    }
+}
+
+fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
+    let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + KEY_CARS;
+
+    let mut temp_key = String::with_capacity(key_chars.len());
+
+    let row_len = match key_chars.len() {
+        25 => 4,
+        _ => 5,
+    };
+
+    let mut counter = 0;
+    // Position counter reflects the position in the
+    // imaginary 5*5 square. So to be consistent, it start from 0
+    let mut row_counter = 0;
+    let mut col_counter = 0;
+    let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+
+    while counter < raw_key.len() && temp_key.len() < KEY_LENGTH {
+        if col_counter > row_len {
+            col_counter = 0;
+            row_counter += 1;
         }
 
-        PlayFairKey {
-            key: temp_key.chars().collect(),
-            key_map,
+        let temp_key_char = &raw_key[counter..counter + 1];
+        counter += 1;
+        if temp_key.contains(temp_key_char) {
+            continue;
+        } else {
+            temp_key += temp_key_char;
+            let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+
+            key_map.insert(
+                match temp_key_char_vec.first() {
+                    Some(k) => *k,
+                    None => '*',
+                },
+                SquarePosition {
+                    row: row_counter,
+                    column: col_counter,
+                },
+            );
+            col_counter += 1;
         }
+    }
+
+    PlayFairKey {
+        key: temp_key.chars().collect(),
+        key_map,
+        row_len,
     }
 }
 
@@ -231,9 +285,17 @@ impl Crypt for PlayFairKey {
         payload: &str,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
-        let mut payload_iter = Payload::new(payload);
+        let mut payload_iter = Payload::new(self.payload(payload));
 
         payload_iter.crypt_payload(self, modus)
+    }
+
+    fn playload(&self, payload: &str) -> String {
+        if self.row_len == 4 {
+            PlayFairKey::payload_5_to_5(payload)
+        } else {
+            PlayFairKey::payload_6_to_6(payload)
+        }
     }
 }
 
@@ -293,7 +355,8 @@ mod tests {
 
     #[test]
     fn test_payload() {
-        let payload = Payload::new("I would like 4 tins of jam.");
+        let pfk = PlayFairKey::new("");
+        let payload = Payload::new(pfk.payload("I would like 4 tins of jam."));
         assert_eq!(payload.payload, "IWOULDLIKETINSOFIAM");
         // becomes "IWOULDLIKETINSOFIAM"
     }
@@ -348,7 +411,8 @@ mod tests {
 
     #[test]
     fn test_iterator() {
-        let mut payload = Payload::new("my secret message");
+        let pfk = PlayFairKey::new("key");
+        let mut payload = Payload::new(pfk.payload("my secret message"));
         let mut digrams: Vec<[char; 2]> = Vec::new();
 
         loop {

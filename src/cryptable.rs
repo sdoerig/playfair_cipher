@@ -10,6 +10,7 @@ pub(crate) trait Crypt {
         -> Result<String, CharNotInKeyError>;
     fn crypt(&self, a: char, b: char, modus: &CryptModus)
         -> Result<CryptResult, CharNotInKeyError>;
+    fn playload(&self, payload: &str) -> String;
 }
 
 pub trait Cypher {

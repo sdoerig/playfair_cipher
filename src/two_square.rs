@@ -106,9 +106,13 @@ impl Crypt for TwoSquare {
         payload: &str,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
-        let mut payload_iter = Payload::new(payload);
+        let mut payload_iter = Payload::new(self.playload(payload));
 
         payload_iter.crypt_payload(self, modus)
+    }
+
+    fn playload(&self, payload: &str) -> String {
+        self.top.payload(payload)
     }
 }
 
