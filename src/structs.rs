@@ -32,16 +32,11 @@ pub(crate) enum CryptModus {
     Encrypt,
     Decrypt,
 }
-#[derive(PartialEq, Debug)]
-pub(crate) enum PayloadAdapter {
-    Payload5To5,
-    Payload6To6,
-}
 
 impl Payload {
     pub(crate) fn new(payload: String) -> Self {
         Payload {
-            payload: payload,
+            payload,
             counter: 0,
         }
     }

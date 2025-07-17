@@ -5,7 +5,7 @@
 use crate::{
     cryptable::{Crypt, Cypher},
     errors::CharNotInKeyError,
-    playfair::{EMPTY_SQ_POS, ROW_LENGTH},
+    playfair::EMPTY_SQ_POS,
     structs::{CryptModus, CryptResult, Payload},
 };
 
@@ -41,6 +41,13 @@ impl FourSquare {
             top_right: PlayFairKey::new(key0),
             bottom_left: PlayFairKey::new(key1),
             standard_key: PlayFairKey::new(""),
+        }
+    }
+    pub fn new_with_digits(key0: &str, key1: &str) -> Self {
+        FourSquare {
+            top_right: PlayFairKey::new_with_digits(key0),
+            bottom_left: PlayFairKey::new_with_digits(key1),
+            standard_key: PlayFairKey::new_with_digits(""),
         }
     }
 }
@@ -104,8 +111,8 @@ impl Crypt for FourSquare {
                 b, &self.bottom_left.key
             )));
         }
-        let a_crypted_idx: u8 = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
-        let b_crypted_idx: u8 = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
+        let a_crypted_idx: u8 = a_sq_pos.row * self.standard_key.square + b_sq_pos.column;
+        let b_crypted_idx: u8 = b_sq_pos.row * self.standard_key.square + a_sq_pos.column;
         let a_crypted = match top_left_key.get(a_crypted_idx as usize) {
             Some(s) => *s,
             None => '*',
@@ -244,6 +251,23 @@ mod tests {
         let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
         match four_square.decrypt("RBESSCPATEEBIXFQNGSHZKSNFYGKYZXNHXKYHB") {
             Ok(s) => assert!(s == "THEQUICKREDFOXIUMPSOVERTHELAZYBROWNDOG"),
+            Err(e) => panic!("CharNotInKeyError {}", e),
+        }
+    }
+    #[test]
+    fn test_four_square_encrypt_6_to_6() {
+        let four_square = FourSquare::new_with_digits("Shelley3746", "Mary234");
+        match four_square.encrypt("The Modern Prometheus 1818") {
+            Ok(s) => assert!(s == "NBSKIR3KIHGLJMNBESPU5Z9S", "{}", format!("got {}", s)),
+            Err(e) => panic!("CharNotInKeyError {}", e),
+        }
+    }
+
+    #[test]
+    fn test_four_square_decrypt_6_to_6() {
+        let four_square = FourSquare::new_with_digits("Shelley3746", "Mary234");
+        match four_square.decrypt("NBSKIR3KIHGLJMNBESPU5Z9S") {
+            Ok(s) => assert!(s == "THEMODERNPROMETHEUS1818X", "{}", format!("got {}", s)),
             Err(e) => panic!("CharNotInKeyError {}", e),
         }
     }

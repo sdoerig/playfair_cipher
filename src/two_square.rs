@@ -5,7 +5,7 @@
 use crate::{
     cryptable::{Crypt, Cypher},
     errors::CharNotInKeyError,
-    playfair::{EMPTY_SQ_POS, ROW_LENGTH},
+    playfair::EMPTY_SQ_POS,
     structs::{CryptModus, CryptResult, Payload},
 };
 
@@ -84,8 +84,8 @@ impl Crypt for TwoSquare {
             )));
         }
         let (a_crypted_idx, b_crypted_idx) = (
-            a_sq_pos.row * ROW_LENGTH + b_sq_pos.column,
-            b_sq_pos.row * ROW_LENGTH + a_sq_pos.column,
+            a_sq_pos.row * self.top.square + b_sq_pos.column,
+            b_sq_pos.row * self.top.square + a_sq_pos.column,
         );
         let a_crypted = match self.top.key.get(a_crypted_idx as usize) {
             Some(s) => *s,

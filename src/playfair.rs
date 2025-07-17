@@ -4,7 +4,7 @@
 use crate::cryptable::{Crypt, Cypher};
 use crate::errors::CharNotInKeyError;
 
-use crate::structs::{CryptModus, CryptResult, Payload, PayloadAdapter, SquarePosition};
+use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
 
 pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
     column: 42,
@@ -15,8 +15,6 @@ use std::collections::HashMap;
 
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-pub(crate) const ROW_LENGTH: u8 = 5;
-const KEY_LENGTH: usize = 25;
 
 /// Struct represents a PlayFaire Cypher. It's holding the key and the
 /// position of any character in the key.
@@ -28,6 +26,7 @@ pub struct PlayFairKey {
     pub(crate) key: Vec<char>,
     pub(crate) key_map: HashMap<char, SquarePosition>,
     pub(crate) row_len: u8,
+    pub(crate) square: u8,
 }
 
 impl PlayFairKey {
@@ -87,7 +86,7 @@ impl PlayFairKey {
 }
 
 fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
-    let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + KEY_CARS;
+    let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + key_chars;
 
     let mut temp_key = String::with_capacity(key_chars.len());
 
@@ -103,7 +102,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
     let mut col_counter = 0;
     let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
 
-    while counter < raw_key.len() && temp_key.len() < KEY_LENGTH {
+    while counter < raw_key.len() && temp_key.len() < key_chars.len() {
         if col_counter > row_len {
             col_counter = 0;
             row_counter += 1;
@@ -135,6 +134,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
         key: temp_key.chars().collect(),
         key_map,
         row_len,
+        square: row_len + 1,
     }
 }
 
@@ -182,8 +182,8 @@ impl Crypt for PlayFairKey {
             // _ _ _ _ _
             // _ _ _ _ _
 
-            a_crypted_idx = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
-            b_crypted_idx = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
+            a_crypted_idx = a_sq_pos.row * self.square + b_sq_pos.column;
+            b_crypted_idx = b_sq_pos.row * self.square + a_sq_pos.column;
         } else if a_sq_pos.column == b_sq_pos.column {
             // in column mode
             // example 1
@@ -205,25 +205,25 @@ impl Crypt for PlayFairKey {
                     // In the last row - so going back to row 0
                     a_crypted_idx = a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row + 1) * ROW_LENGTH + a_sq_pos.column
+                    a_crypted_idx = (a_sq_pos.row + 1) * self.square + a_sq_pos.column
                 }
                 if b_sq_pos.row == 4 {
                     // In the last row - so going back to row 0
                     b_crypted_idx = b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row + 1) * ROW_LENGTH + b_sq_pos.column
+                    b_crypted_idx = (b_sq_pos.row + 1) * self.square + b_sq_pos.column
                 }
             } else {
                 // Decrypting
                 if a_sq_pos.row == 0 {
                     a_crypted_idx = 20 + a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row - 1) * ROW_LENGTH + a_sq_pos.column;
+                    a_crypted_idx = (a_sq_pos.row - 1) * self.square + a_sq_pos.column;
                 }
                 if b_sq_pos.row == 0 {
                     b_crypted_idx = 20 + b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row - 1) * ROW_LENGTH + b_sq_pos.column;
+                    b_crypted_idx = (b_sq_pos.row - 1) * self.square + b_sq_pos.column;
                 }
             }
         } else if a_sq_pos.row == b_sq_pos.row {
@@ -242,27 +242,27 @@ impl Crypt for PlayFairKey {
             if modus == &CryptModus::Encrypt {
                 // moving right
                 if a_sq_pos.column == 4 {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH;
+                    a_crypted_idx = a_sq_pos.row * self.square;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column + 1;
+                    a_crypted_idx = a_sq_pos.row * self.square + a_sq_pos.column + 1;
                 }
                 if b_sq_pos.column == 4 {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH;
+                    b_crypted_idx = b_sq_pos.row * self.square;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column + 1;
+                    b_crypted_idx = b_sq_pos.row * self.square + b_sq_pos.column + 1;
                 }
             } else {
                 // decrypt
                 // moving left
                 if a_sq_pos.column == 0 {
-                    a_crypted_idx = (a_sq_pos.row * ROW_LENGTH) + 4;
+                    a_crypted_idx = (a_sq_pos.row * self.square) + 4;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column - 1;
+                    a_crypted_idx = a_sq_pos.row * self.square + a_sq_pos.column - 1;
                 }
                 if b_sq_pos.column == 0 {
-                    b_crypted_idx = (b_sq_pos.row * ROW_LENGTH) + 4;
+                    b_crypted_idx = (b_sq_pos.row * self.square) + 4;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column - 1;
+                    b_crypted_idx = b_sq_pos.row * self.square + b_sq_pos.column - 1;
                 }
             }
         }
@@ -369,6 +369,19 @@ mod tests {
             vec![
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
                 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+            ]
+        )
+    }
+
+    #[test]
+    fn test_key_gen_empty_key_6_to_6() {
+        let pfk = PlayFairKey::new_with_digits("");
+        assert_eq!(
+            pfk.key,
+            vec![
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9'
             ]
         )
     }
