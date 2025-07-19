@@ -189,7 +189,7 @@ Implementation of the [FourSquare cipher](https://en.wikipedia.org/wiki/Four-squ
 
 ## Encrypt
 
-### Example using 5 to 5
+### Example 5 to 5
  
 As described at <https://en.wikipedia.org/wiki/Four-square_cipher>
 
@@ -206,7 +206,7 @@ match fsq.encrypt("joe") {
 };
 ```
 
-### Example using 6 to 6
+### Example 6 to 6
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
@@ -238,7 +238,7 @@ match fsq.decrypt("DIAZ") {
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
-### Example using 6 to 6
+### Example 6 to 6
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
