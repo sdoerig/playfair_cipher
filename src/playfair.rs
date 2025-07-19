@@ -1,6 +1,7 @@
 //! This is the implentation of the PlayFair cipher as described
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
+//!
 use crate::cryptable::{Crypt, Cypher};
 use crate::errors::CharNotInKeyError;
 
@@ -14,8 +15,7 @@ pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
 use std::collections::HashMap;
 
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
-pub(crate) const ROW_LENGTH: u8 = 5;
-const KEY_LENGTH: usize = 25;
+const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 /// Struct represents a PlayFaire Cypher. It's holding the key and the
 /// position of any character in the key.
@@ -26,6 +26,8 @@ pub struct PlayFairKey {
     ///
     pub(crate) key: Vec<char>,
     pub(crate) key_map: HashMap<char, SquarePosition>,
+    pub(crate) row_len: u8,
+    pub(crate) square: u8,
 }
 
 impl PlayFairKey {
@@ -36,51 +38,104 @@ impl PlayFairKey {
     /// ```
     /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
     ///
-    /// let pfc = PlayFairKey::new("Secret");
+    /// let pfc = PlayFairKey::new_5_to_5("Secret");
     /// ```
-    pub fn new(key: &str) -> Self {
-        let raw_key: String = key.to_uppercase().replace(' ', "").replace('J', "I") + KEY_CARS;
+    pub fn new_5_to_5(key: &str) -> Self {
+        create_play_fair_key(key, KEY_CARS)
+    }
+    pub fn new_6_to_6(key: &str) -> Self {
+        create_play_fair_key(key, KEY_CARS_A_TO_Z_0_TO_9)
+    }
 
-        let mut temp_key = String::with_capacity(KEY_LENGTH);
-        let mut counter = 0;
-        // Position counter reflects the position in the
-        // imaginary 5*5 square. So to be consistent, it start from 0
-        let mut row_counter = 0;
-        let mut col_counter = 0;
-        let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+    pub(crate) fn payload(&self, payload: &str) -> String {
+        if self.row_len == 4 {
+            PlayFairKey::payload_5_to_5(payload)
+        } else {
+            PlayFairKey::payload_6_to_6(payload)
+        }
+    }
 
-        while counter < raw_key.len() && temp_key.len() < KEY_LENGTH {
-            if col_counter > 4 {
-                col_counter = 0;
-                row_counter += 1;
+    fn payload_6_to_6(payload: &str) -> String {
+        let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        while counter < payload_uc.len() {
+            let character = &payload_uc[counter..counter + 1];
+            if ("A"..="Z").contains(&character) || ("0"..="9").contains(&character) {
+                payload_cleared += character;
             }
-
-            let temp_key_char = &raw_key[counter..counter + 1];
             counter += 1;
-            if temp_key.contains(temp_key_char) {
-                continue;
-            } else {
-                temp_key += temp_key_char;
-                let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+        }
+        payload_cleared
+    }
 
-                key_map.insert(
-                    match temp_key_char_vec.first() {
-                        Some(k) => *k,
-                        None => '*',
-                    },
-                    SquarePosition {
-                        row: row_counter,
-                        column: col_counter,
-                    },
-                );
-                col_counter += 1;
+    fn payload_5_to_5(payload: &str) -> String {
+        let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        while counter < payload_uc.len() {
+            let character = &payload_uc[counter..counter + 1];
+            if character == "J" {
+                payload_cleared += "I";
+            } else if ("A"..="Z").contains(&character) {
+                payload_cleared += character;
             }
+            counter += 1;
+        }
+        payload_cleared
+    }
+}
+
+fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
+    let raw_key: String = key.to_uppercase() + key_chars;
+
+    let mut temp_key = String::with_capacity(key_chars.len());
+
+    let row_len = match key_chars.len() {
+        25 => 4,
+        _ => 5,
+    };
+
+    let mut counter = 0;
+    // Position counter reflects the position in the
+    // imaginary 5*5 square. So to be consistent, it start from 0
+    let mut row_counter = 0;
+    let mut col_counter = 0;
+    let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+
+    while counter < raw_key.len() && temp_key.len() < key_chars.len() {
+        if col_counter > row_len {
+            col_counter = 0;
+            row_counter += 1;
         }
 
-        PlayFairKey {
-            key: temp_key.chars().collect(),
-            key_map,
+        let temp_key_char = &raw_key[counter..counter + 1];
+        counter += 1;
+        if temp_key.contains(temp_key_char) || !key_chars.contains(temp_key_char) {
+            continue;
+        } else {
+            temp_key += temp_key_char;
+            let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+
+            key_map.insert(
+                match temp_key_char_vec.first() {
+                    Some(k) => *k,
+                    None => '*',
+                },
+                SquarePosition {
+                    row: row_counter,
+                    column: col_counter,
+                },
+            );
+            col_counter += 1;
         }
+    }
+
+    PlayFairKey {
+        key: temp_key.chars().collect(),
+        key_map,
+        row_len,
+        square: row_len + 1,
     }
 }
 
@@ -128,8 +183,8 @@ impl Crypt for PlayFairKey {
             // _ _ _ _ _
             // _ _ _ _ _
 
-            a_crypted_idx = a_sq_pos.row * ROW_LENGTH + b_sq_pos.column;
-            b_crypted_idx = b_sq_pos.row * ROW_LENGTH + a_sq_pos.column;
+            a_crypted_idx = a_sq_pos.row * self.square + b_sq_pos.column;
+            b_crypted_idx = b_sq_pos.row * self.square + a_sq_pos.column;
         } else if a_sq_pos.column == b_sq_pos.column {
             // in column mode
             // example 1
@@ -147,29 +202,29 @@ impl Crypt for PlayFairKey {
             // _ a _ _ _
 
             if modus == &CryptModus::Encrypt {
-                if a_sq_pos.row == 4 {
+                if a_sq_pos.row == self.row_len {
                     // In the last row - so going back to row 0
                     a_crypted_idx = a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row + 1) * ROW_LENGTH + a_sq_pos.column
+                    a_crypted_idx = (a_sq_pos.row + 1) * self.square + a_sq_pos.column
                 }
-                if b_sq_pos.row == 4 {
+                if b_sq_pos.row == self.row_len {
                     // In the last row - so going back to row 0
                     b_crypted_idx = b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row + 1) * ROW_LENGTH + b_sq_pos.column
+                    b_crypted_idx = (b_sq_pos.row + 1) * self.square + b_sq_pos.column
                 }
             } else {
                 // Decrypting
                 if a_sq_pos.row == 0 {
                     a_crypted_idx = 20 + a_sq_pos.column;
                 } else {
-                    a_crypted_idx = (a_sq_pos.row - 1) * ROW_LENGTH + a_sq_pos.column;
+                    a_crypted_idx = (a_sq_pos.row - 1) * self.square + a_sq_pos.column;
                 }
                 if b_sq_pos.row == 0 {
                     b_crypted_idx = 20 + b_sq_pos.column;
                 } else {
-                    b_crypted_idx = (b_sq_pos.row - 1) * ROW_LENGTH + b_sq_pos.column;
+                    b_crypted_idx = (b_sq_pos.row - 1) * self.square + b_sq_pos.column;
                 }
             }
         } else if a_sq_pos.row == b_sq_pos.row {
@@ -187,28 +242,28 @@ impl Crypt for PlayFairKey {
             // T U V W Z
             if modus == &CryptModus::Encrypt {
                 // moving right
-                if a_sq_pos.column == 4 {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH;
+                if a_sq_pos.column == self.row_len {
+                    a_crypted_idx = a_sq_pos.row * self.square;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column + 1;
+                    a_crypted_idx = a_sq_pos.row * self.square + a_sq_pos.column + 1;
                 }
-                if b_sq_pos.column == 4 {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH;
+                if b_sq_pos.column == self.row_len {
+                    b_crypted_idx = b_sq_pos.row * self.square;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column + 1;
+                    b_crypted_idx = b_sq_pos.row * self.square + b_sq_pos.column + 1;
                 }
             } else {
                 // decrypt
                 // moving left
                 if a_sq_pos.column == 0 {
-                    a_crypted_idx = (a_sq_pos.row * ROW_LENGTH) + 4;
+                    a_crypted_idx = (a_sq_pos.row * self.square) + self.row_len;
                 } else {
-                    a_crypted_idx = a_sq_pos.row * ROW_LENGTH + a_sq_pos.column - 1;
+                    a_crypted_idx = a_sq_pos.row * self.square + a_sq_pos.column - 1;
                 }
                 if b_sq_pos.column == 0 {
-                    b_crypted_idx = (b_sq_pos.row * ROW_LENGTH) + 4;
+                    b_crypted_idx = (b_sq_pos.row * self.square) + self.row_len;
                 } else {
-                    b_crypted_idx = b_sq_pos.row * ROW_LENGTH + b_sq_pos.column - 1;
+                    b_crypted_idx = b_sq_pos.row * self.square + b_sq_pos.column - 1;
                 }
             }
         }
@@ -231,9 +286,17 @@ impl Crypt for PlayFairKey {
         payload: &str,
         modus: &crate::structs::CryptModus,
     ) -> Result<String, crate::errors::CharNotInKeyError> {
-        let mut payload_iter = Payload::new(payload);
+        let mut payload_iter = Payload::new(self.payload(payload));
 
         payload_iter.crypt_payload(self, modus)
+    }
+
+    fn playload(&self, payload: &str) -> String {
+        if self.row_len == 4 {
+            PlayFairKey::payload_5_to_5(payload)
+        } else {
+            PlayFairKey::payload_6_to_6(payload)
+        }
     }
 }
 
@@ -241,7 +304,7 @@ impl Cypher for PlayFairKey {
     /// Encrypts a string. Note as the PlayFair cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
-    /// # Example
+    /// # Example 5 to 5
     ///  
     /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
     ///
@@ -249,10 +312,25 @@ impl Cypher for PlayFairKey {
     /// use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
     /// use playfair_cipher::cryptable::Cypher;
     ///
-    /// let pfc = PlayFairKey::new("playfair example");
+    /// let pfc = PlayFairKey::new_5_to_5("playfair example");
     /// match pfc.encrypt("hide the gold in the tree stump") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "BMODZBXDNABEKUDMUIXMMOUVIF");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
+    /// ```
+    ///     
+    /// # Example 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;
+    ///
+    /// let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
+    /// match pfc.encrypt("hide the gold in the tree stump at 5 o'clock.") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "SXG0SJGQW5H5OUGX2MXMXQUN733Q0WDPNDHB");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -263,7 +341,7 @@ impl Cypher for PlayFairKey {
 
     /// Decrypts a string.
     ///
-    /// # Example
+    /// # Example 5 to 5
     ///
     /// As described at <https://en.wikipedia.org/wiki/Playfair_cipher>
     ///
@@ -272,7 +350,7 @@ impl Cypher for PlayFairKey {
     /// use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
     /// use playfair_cipher::cryptable::Cypher;
     ///
-    /// let pfc = PlayFairKey::new("playfair example");
+    /// let pfc = PlayFairKey::new_5_to_5("playfair example");
     /// match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMP");
@@ -280,6 +358,21 @@ impl Cypher for PlayFairKey {
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };    
     ///
+    /// ```
+    ///
+    /// # Example 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;
+    ///
+    /// let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
+    /// match pfc.decrypt("SXG0SJGQW5H5OUGX2MXMXQUN733Q0WDPNDHB") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMPAT5OCLOCKX");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
     /// ```
     fn decrypt(&self, payload: &str) -> Result<String, CharNotInKeyError> {
         self.crypt_payload(payload, &CryptModus::Decrypt)
@@ -293,14 +386,22 @@ mod tests {
 
     #[test]
     fn test_payload() {
-        let payload = Payload::new("I would like 4 tins of jam.");
+        let pfk = PlayFairKey::new_5_to_5("");
+        let payload = Payload::new(pfk.payload("I would like 4 tins of jam."));
         assert_eq!(payload.payload, "IWOULDLIKETINSOFIAM");
+        // becomes "IWOULDLIKETINSOFIAM"
+    }
+    #[test]
+    fn test_payload_6_to_6() {
+        let pfk = PlayFairKey::new_6_to_6("");
+        let payload = Payload::new(pfk.payload("I would like 4 tins of jam."));
+        assert_eq!(payload.payload, "IWOULDLIKE4TINSOFJAM");
         // becomes "IWOULDLIKETINSOFIAM"
     }
 
     #[test]
     fn test_key_gen_empty_key() {
-        let pfk = PlayFairKey::new("");
+        let pfk = PlayFairKey::new_5_to_5("");
         assert_eq!(
             pfk.key,
             vec![
@@ -311,8 +412,21 @@ mod tests {
     }
 
     #[test]
+    fn test_key_gen_empty_key_6_to_6() {
+        let pfk = PlayFairKey::new_6_to_6("");
+        assert_eq!(
+            pfk.key,
+            vec![
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9'
+            ]
+        )
+    }
+
+    #[test]
     fn test_key_gen_simple() {
-        let pfk = PlayFairKey::new("simple");
+        let pfk = PlayFairKey::new_5_to_5("simple");
         assert_eq!(
             pfk.key,
             vec![
@@ -324,7 +438,7 @@ mod tests {
 
     #[test]
     fn test_key_gen_seecretisjj() {
-        let pfk = PlayFairKey::new("seecretisJJ");
+        let pfk = PlayFairKey::new_5_to_5("seecretisJJ");
         assert_eq!(
             pfk.key,
             vec![
@@ -335,8 +449,21 @@ mod tests {
     }
 
     #[test]
+    fn test_key_gen_seecretisjj_6_to_6() {
+        let pfk = PlayFairKey::new_6_to_6("seecretisJJ");
+        assert_eq!(
+            pfk.key,
+            vec![
+                'S', 'E', 'C', 'R', 'T', 'I', 'J', 'A', 'B', 'D', 'F', 'G', 'H', 'K', 'L', 'M',
+                'N', 'O', 'P', 'Q', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9'
+            ]
+        )
+    }
+
+    #[test]
     fn test_key_gen_zxy_and_so_on() {
-        let pfk = PlayFairKey::new("ZYXWVUTSRQPONMLKJIHGFECA");
+        let pfk = PlayFairKey::new_5_to_5("ZYXWVUTSRQPONMLKJIHGFECA");
         assert_eq!(
             pfk.key,
             vec![
@@ -348,7 +475,8 @@ mod tests {
 
     #[test]
     fn test_iterator() {
-        let mut payload = Payload::new("my secret message");
+        let pfk = PlayFairKey::new_5_to_5("key");
+        let mut payload = Payload::new(pfk.payload("my secret message"));
         let mut digrams: Vec<[char; 2]> = Vec::new();
 
         loop {
@@ -375,7 +503,7 @@ mod tests {
     }
     #[test]
     fn test_encrypt_square_rule_one_char() {
-        let pfx = PlayFairKey::new("secret");
+        let pfx = PlayFairKey::new_5_to_5("secret");
         match pfx.encrypt("a") {
             Ok(s) => assert_eq!(s, "DV"),
             Err(e) => panic!("CharNotInKeyError {}", e),
@@ -384,7 +512,7 @@ mod tests {
 
     #[test]
     fn test_position_map() {
-        let pfx = PlayFairKey::new("playfair example");
+        let pfx = PlayFairKey::new_5_to_5("playfair example");
         let valid_positions: Vec<SquarePosition> = vec![
             SquarePosition { row: 0, column: 0 },
             SquarePosition { row: 0, column: 1 },
@@ -442,7 +570,7 @@ mod tests {
     #[test]
     fn test_crypt_square() {
         // as described under https://en.wikipedia.org/wiki/Playfair_cipher Example 1
-        let pfc = PlayFairKey::new("playfair example");
+        let pfc = PlayFairKey::new_5_to_5("playfair example");
         match pfc.crypt('H', 'I', &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(digram_crypt.a, 'B');
@@ -469,7 +597,7 @@ mod tests {
 
     #[test]
     fn test_crypt_column() {
-        let pfc = PlayFairKey::new("playfair example");
+        let pfc = PlayFairKey::new_5_to_5("playfair example");
 
         match pfc.crypt('D', 'E', &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
@@ -503,7 +631,7 @@ mod tests {
 
     #[test]
     fn test_crypt_row() {
-        let pfc = PlayFairKey::new("playfair example");
+        let pfc = PlayFairKey::new_5_to_5("playfair example");
 
         match pfc.crypt('E', 'X', &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
@@ -553,7 +681,7 @@ mod tests {
 
     #[test]
     fn test_encrypt() {
-        let pfc = PlayFairKey::new("rust rules");
+        let pfc = PlayFairKey::new_5_to_5("rust rules");
         match pfc.encrypt(&String::from("cratesio")) {
             Ok(crypt) => {
                 assert_eq!(crypt, String::from("ETCUBRHP"));
@@ -564,7 +692,7 @@ mod tests {
 
     #[test]
     fn test_decrypt() {
-        let pfc = PlayFairKey::new("rustrules");
+        let pfc = PlayFairKey::new_5_to_5("rustrules");
         match pfc.decrypt(&String::from("ETCUBRHP")) {
             Ok(crypt) => {
                 assert_eq!(crypt, String::from("cratesio").to_uppercase());

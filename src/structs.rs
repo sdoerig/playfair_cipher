@@ -34,21 +34,9 @@ pub(crate) enum CryptModus {
 }
 
 impl Payload {
-    pub(crate) fn new(payload: &str) -> Self {
-        let mut counter: usize = 0;
-        let mut payload_cleared = String::with_capacity(payload.len());
-        let payload_uc = payload.to_uppercase();
-        while counter < payload_uc.len() {
-            let character = &payload_uc[counter..counter + 1];
-            if character == "J" {
-                payload_cleared += "I";
-            } else if ("A"..="Z").contains(&character) {
-                payload_cleared += character;
-            }
-            counter += 1;
-        }
+    pub(crate) fn new(payload: String) -> Self {
         Payload {
-            payload: payload_cleared,
+            payload,
             counter: 0,
         }
     }

@@ -1,13 +1,13 @@
 [package]
 name = "playfair_cipher"
 authors = ["Stefan Dörig <sdoerig@bluewin.ch>"]
-version = "0.3.5"
+version = "1.0.0"
 edition = "2021"
 license = "AGPL-3.0-or-later"
 description = "Implementation of Playfair, Two square and Four square cipher"
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
-keywords = ["Cipher", "Playfair", "Cryptography", "Four_square", "Two_square"]
+keywords = ["Cipher", "Playfair", "Cryptography", "Four_square", "Two_square", "5 to 5 square", "6 to 6 square"]
 exclude = [
     ".github",
 ]
