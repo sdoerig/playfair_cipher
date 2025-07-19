@@ -50,19 +50,19 @@ To use the ciphers as they where intended to be used one must seed them with a p
 are possible. Not encryptable characters in the passkey are removed again. Note the removement happends
 stealthy - no error is raised.
 
-# playfair_cipher
+# Playfair Cipher
 Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_cipher) - nothing special, nothing useful, just for fun. 
-
-
 
 
 ## Encrypt
 
+### Example 5 to 5
+
 ```rust
 use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-use use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cypher;
 
-let pfc = PlayFairKey::new("playfair example");
+let pfc = PlayFairKey::new_5_to_5("playfair example");
 match pfc.encrypt("hide the gold in the tree stump") {
   Ok(crypt) => {
     assert_eq!(crypt, "BMODZBXDNABEKUDMUIXMMOUVIF");
@@ -70,65 +70,67 @@ match pfc.encrypt("hide the gold in the tree stump") {
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
+    
+### Example 6 to 6
+
+```rust
+use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;
+
+let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
+match pfc.encrypt("hide the gold in the tree stump at 5 o'clock.") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "SXG0SJGQW5H5OUGX2MXMXQUN733Q0WDPNDHB");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
 
 ## Decrypt
+
+### Example 5 to 5
 
 ```rust
 use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
 use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
 use playfair_cipher::cryptable::Cypher;
 
-let pfc = PlayFairKey::new("playfair example");
+let pfc = PlayFairKey::new_5_to_5("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
   Ok(crypt) => {
     assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMP");
   }
   Err(e) => panic!("CharNotInKeyError {}", e),
-}; 
+};    
 ```
 
-# four_square_ciper
-Implementation of the [FourSquare cipher](https://en.wikipedia.org/wiki/Four-square_cipher) - nothing special, nothing useful, just for fun.
-
-## Encrypt
-
+### Example 6 to 6
 ```rust
-use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
 use playfair_cipher::cryptable::Cypher;
 
-let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
-match fsq.encrypt("joe") {
+let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
+match pfc.decrypt("SXG0SJGQW5H5OUGX2MXMXQUN733Q0WDPNDHB") {
   Ok(crypt) => {
-    assert_eq!(crypt, "DIAZ");
+    assert_eq!(crypt, "HIDETHEGOLDINTHETREXESTUMPAT5OCLOCKX");
   }
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
 
-## Decrypt
+# Two Square Cipher
 
-```rust
-use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
-
-let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
-match fsq.decrypt("DIAZ") {
-  Ok(crypt) => {
-    assert_eq!(crypt, "IOEX");
-  }
-  Err(e) => panic!("CharNotInKeyError {}", e),
-};
-```
-# two_square_ciper
 Implementation of the [TwoSquare cipher](https://en.wikipedia.org/wiki/Two-square_cipher) - nothing special, nothing useful, just for fun.
 
 ## Encrypt
+ 
+### Example 5 to 5
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cypher;;
 
-let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+let tsq = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 match tsq.encrypt("joe") {
   Ok(crypt) => {
     assert_eq!(crypt, "NYMT");
@@ -136,9 +138,25 @@ match tsq.encrypt("joe") {
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
+### Example 6 to 6
+
+```rust
+use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;;
+
+let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+match tsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "CKNWEBMPEYAPRJLX01WYXJNTKOVLE0");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
 
 ## Decrypt
 
+### Example 5 to 5
+ 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
 use playfair_cipher::cryptable::Cypher;
@@ -151,6 +169,90 @@ match tsq.decrypt("NYMT") {
   Err(e) => panic!("CharNotInKeyError {}", e),
 };
 ```
+### Example 6 to 6
+
+```rust
+use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;;
+
+let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+match tsq.decrypt("CKNWEBMPEYAPRJLX01WYXJNTKOVLE0") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "BENWADETAKESTHE310TRAINTOYUMAX");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+
+# Four Square Cipher
+Implementation of the [FourSquare cipher](https://en.wikipedia.org/wiki/Four-square_cipher) - nothing special, nothing useful, just for fun.
+
+## Encrypt
+
+### Example using 5 to 5
+ 
+As described at <https://en.wikipedia.org/wiki/Four-square_cipher>
+
+```rust
+use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;
+
+let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
+match fsq.encrypt("joe") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "DIAZ");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+
+### Example using 6 to 6
+
+```rust
+use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;
+
+let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+match fsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "PEOQMKXUPDEUSAL201WIADJQI0RJLP");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+
+## Decrypt
+
+### Example 5 to 5
+ 
+
+```rust
+use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;
+
+let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
+match fsq.decrypt("DIAZ") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "IOEX");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+### Example using 6 to 6
+
+```rust
+use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+use playfair_cipher::cryptable::Cypher;
+
+let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+match fsq.decrypt("PEOQMKXUPDEUSAL201WIADJQI0RJLP") {
+  Ok(crypt) => {
+    assert_eq!(crypt, "BENWADETAKESTHE310TRAINTOYUMAX");
+  }
+  Err(e) => panic!("CharNotInKeyError {}", e),
+};
+```
+
 
 That's it.
 
