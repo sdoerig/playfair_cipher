@@ -36,18 +36,18 @@ pub struct FourSquare {
 }
 
 impl FourSquare {
-    pub fn new(key0: &str, key1: &str) -> Self {
+    pub fn new_5_to_5(key0: &str, key1: &str) -> Self {
         FourSquare {
-            top_right: PlayFairKey::new(key0),
-            bottom_left: PlayFairKey::new(key1),
-            standard_key: PlayFairKey::new(""),
+            top_right: PlayFairKey::new_5_to_5(key0),
+            bottom_left: PlayFairKey::new_5_to_5(key1),
+            standard_key: PlayFairKey::new_5_to_5(""),
         }
     }
-    pub fn new_with_digits(key0: &str, key1: &str) -> Self {
+    pub fn new_6_to_6(key0: &str, key1: &str) -> Self {
         FourSquare {
-            top_right: PlayFairKey::new_with_digits(key0),
-            bottom_left: PlayFairKey::new_with_digits(key1),
-            standard_key: PlayFairKey::new_with_digits(""),
+            top_right: PlayFairKey::new_6_to_6(key0),
+            bottom_left: PlayFairKey::new_6_to_6(key1),
+            standard_key: PlayFairKey::new_6_to_6(""),
         }
     }
 }
@@ -146,7 +146,7 @@ impl Cypher for FourSquare {
     /// Encrypts a string. Note as the Four Square cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
-    /// # Example
+    /// # Example using 5 to 5
     ///  
     /// As described at <https://en.wikipedia.org/wiki/Four-square_cipher>
     ///
@@ -154,10 +154,25 @@ impl Cypher for FourSquare {
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::cryptable::Cypher;
     ///
-    /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
+    /// let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
     /// match fsq.encrypt("joe") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "DIAZ");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
+    /// ```
+    ///
+    /// # Example using 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;
+    ///
+    /// let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+    /// match fsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "PEOQMKXUPDEUSAL201WIADJQI0RJLP");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -168,7 +183,7 @@ impl Cypher for FourSquare {
 
     /// Decrypts a string.
     ///
-    /// # Example
+    /// # Example 5 to 5
     ///  
     /// As described at <https://en.wikipedia.org/wiki/Four-square_cipher>
     ///
@@ -176,10 +191,24 @@ impl Cypher for FourSquare {
     /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::cryptable::Cypher;
     ///
-    /// let fsq = FourSquare::new("EXAMPLE", "KEYWORD");
+    /// let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
     /// match fsq.decrypt("DIAZ") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "IOEX");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
+    /// ```
+    /// Example using 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;
+    ///
+    /// let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+    /// match fsq.decrypt("PEOQMKXUPDEUSAL201WIADJQI0RJLP") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "BENWADETAKESTHE310TRAINTOYUMAX");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -212,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_four_square_creation_key() {
-        let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
+        let four_square = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
         assert!(
             four_square.standard_key.key
                 == vec![
@@ -239,36 +268,36 @@ mod tests {
 
     #[test]
     fn test_four_square_encrypt() {
-        let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
+        let four_square = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
         match four_square.encrypt("The quick red fox jumps over the lazy brown dog.") {
             Ok(s) => assert!(s == "RBESSCPATEEBIXFQNGSHZKSNFYGKYZXNHXKYHB"),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 
     #[test]
     fn test_four_square_decrypt() {
-        let four_square = FourSquare::new("EXAMPLE", "KEYWORD");
+        let four_square = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
         match four_square.decrypt("RBESSCPATEEBIXFQNGSHZKSNFYGKYZXNHXKYHB") {
             Ok(s) => assert!(s == "THEQUICKREDFOXIUMPSOVERTHELAZYBROWNDOG"),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
     #[test]
     fn test_four_square_encrypt_6_to_6() {
-        let four_square = FourSquare::new_with_digits("Shelley3746", "Mary234");
+        let four_square = FourSquare::new_6_to_6("Shelley3746", "Mary234");
         match four_square.encrypt("The Modern Prometheus 1818") {
-            Ok(s) => assert!(s == "NBSKIR3KIHGLJMNBESPU5Z9S", "{}", format!("got {}", s)),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Ok(s) => assert!(s == "NBSKIR3KIHGLJMNBESPU5Z9S", "{}", format!("got {s}")),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 
     #[test]
     fn test_four_square_decrypt_6_to_6() {
-        let four_square = FourSquare::new_with_digits("Shelley3746", "Mary234");
+        let four_square = FourSquare::new_6_to_6("Shelley3746", "Mary234");
         match four_square.decrypt("NBSKIR3KIHGLJMNBESPU5Z9S") {
-            Ok(s) => assert!(s == "THEMODERNPROMETHEUS1818X", "{}", format!("got {}", s)),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Ok(s) => assert!(s == "THEMODERNPROMETHEUS1818X", "{}", format!("got {s}")),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 }

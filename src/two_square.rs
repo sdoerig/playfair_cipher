@@ -33,10 +33,17 @@ pub struct TwoSquare {
 }
 
 impl TwoSquare {
-    pub fn new(key0: &str, key1: &str) -> Self {
+    pub fn new_5_to_5(key0: &str, key1: &str) -> Self {
         TwoSquare {
-            top: PlayFairKey::new(key0),
-            bottom: PlayFairKey::new(key1),
+            top: PlayFairKey::new_5_to_5(key0),
+            bottom: PlayFairKey::new_5_to_5(key1),
+        }
+    }
+
+    pub fn new_6_to_6(key0: &str, key1: &str) -> Self {
+        TwoSquare {
+            top: PlayFairKey::new_6_to_6(key0),
+            bottom: PlayFairKey::new_6_to_6(key1),
         }
     }
 }
@@ -120,7 +127,7 @@ impl Cypher for TwoSquare {
     /// Encrypts a string. Note as the Two Square cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
-    /// # Example
+    /// # Example 5 to 5
     ///  
     /// As described at <https://en.wikipedia.org/wiki/Two-square_cipher>
     ///
@@ -128,10 +135,24 @@ impl Cypher for TwoSquare {
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::cryptable::Cypher;;
     ///
-    /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+    /// let tsq = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
     /// match tsq.encrypt("joe") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "NYMT");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
+    /// ```
+    /// # Example 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;;
+    ///
+    /// let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+    /// match tsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "CKNWEBMPEYAPRJLX01WYXJNTKOVLE0");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -142,7 +163,7 @@ impl Cypher for TwoSquare {
 
     /// Decrypts a string.
     ///
-    /// # Example
+    /// # Example 5 to 5
     ///  
     /// As described at <https://en.wikipedia.org/wiki/Two-square_cipher>
     ///
@@ -150,10 +171,24 @@ impl Cypher for TwoSquare {
     /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
     /// use playfair_cipher::cryptable::Cypher;
     ///
-    /// let tsq = TwoSquare::new("EXAMPLE", "KEYWORD");
+    /// let tsq = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
     /// match tsq.decrypt("NYMT") {
     ///   Ok(crypt) => {
     ///     assert_eq!(crypt, "IOEX");
+    ///   }
+    ///   Err(e) => panic!("CharNotInKeyError {}", e),
+    /// };
+    /// ```
+    /// # Example 6 to 6
+    ///
+    /// ```
+    /// use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
+    /// use playfair_cipher::cryptable::Cypher;;
+    ///
+    /// let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
+    /// match tsq.decrypt("CKNWEBMPEYAPRJLX01WYXJNTKOVLE0") {
+    ///   Ok(crypt) => {
+    ///     assert_eq!(crypt, "BENWADETAKESTHE310TRAINTOYUMAX");
     ///   }
     ///   Err(e) => panic!("CharNotInKeyError {}", e),
     /// };
@@ -185,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_two_square_creation_key() {
-        let two_square = TwoSquare::new("EXAMPLE", "KEYWORD");
+        let two_square = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 
         assert!(
             two_square.top.key
@@ -205,37 +240,54 @@ mod tests {
 
     #[test]
     fn test_two_square_encrypt() {
-        let two_square = TwoSquare::new("EXAMPLE", "KEYWORD");
+        let two_square = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
         match two_square.encrypt("HELPMEOBIWANKENOBI") {
             Ok(s) => assert!(&s == "HECMXWSRKYXPHWNODG", "{}", s),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 
     #[test]
     fn test_two_square_decrypt() {
-        let two_square = TwoSquare::new("EXAMPLE", "KEYWORD");
+        let two_square = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
         match two_square.decrypt("HECMXWSRKYXPHWNODG") {
             Ok(s) => assert!(s == "HELPMEOBIWANKENOBI"),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 
     #[test]
     fn test_two_square_encrypt_second() {
-        let two_square = TwoSquare::new("UEMFUI", "NIHKGDTMSXSEMLGIFW");
+        let two_square = TwoSquare::new_5_to_5("UEMFUI", "NIHKGDTMSXSEMLGIFW");
         match two_square.encrypt("HELPMEOBIWANKENOBI") {
             Ok(s) => assert!(&s == "HENOUFHQFAANHLLPBI", "{}", s),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 
     #[test]
     fn test_two_square_decrypt_second() {
-        let two_square = TwoSquare::new("UEMFUI", "NIHKGDTMSXSEMLGIFW");
+        let two_square = TwoSquare::new_5_to_5("UEMFUI", "NIHKGDTMSXSEMLGIFW");
         match two_square.decrypt("HENOUFHQFAANHLLPBI") {
             Ok(s) => assert!(&s == "HELPMEOBIWANKENOBI", "{}", s),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
+        }
+    }
+    #[test]
+    fn test_two_square_6_to_6_encrypt() {
+        let two_square = TwoSquare::new_6_to_6("example1234", "SEcret85736");
+        match two_square.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
+            Ok(s) => assert!(&s == "2TQUEGPSEMESWDA52ZWSPGRESVVLPV", "{}", s),
+            Err(e) => panic!("CharNotInKeyError {e}"),
+        }
+    }
+
+    #[test]
+    fn test_two_square_6_to_6_decrypt() {
+        let two_square = TwoSquare::new_6_to_6("example1234", "SEcret85736");
+        match two_square.decrypt("2TQUEGPSEMESWDA52ZWSPGRESVVLPV") {
+            Ok(s) => assert!(&s == "BENWADETAKESTHE310TRAINTOYUMAX", "{}", s),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         }
     }
 }
