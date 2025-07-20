@@ -34,5 +34,5 @@ fn bench_four_square(c: &mut Criterion) {
     });
 }
 
-criterion_group!(name = benches; config = Criterion::default(); targets = bench_playfair);
+criterion_group!(name = benches; config = Criterion::default(); targets = bench_playfair, bench_two_square, bench_four_square);
 criterion_main!(benches);
