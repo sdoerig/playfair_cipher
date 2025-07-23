@@ -28,6 +28,7 @@ pub struct PlayFairKey {
     pub(crate) key_map: HashMap<char, SquarePosition>,
     pub(crate) row_len: u8,
     pub(crate) square: u8,
+    fptr: fn(&str) -> String,
 }
 
 impl PlayFairKey {
@@ -95,6 +96,10 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
         25 => 4,
         _ => 5,
     };
+    let fptr = match key_chars.len() {
+        25 => PlayFairKey::payload_5_to_5,
+        _ => PlayFairKey::payload_6_to_6,
+    };
 
     let mut counter = 0;
     // Position counter reflects the position in the
@@ -136,6 +141,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
         key_map,
         row_len,
         square: row_len + 1,
+        fptr,
     }
 }
 
@@ -292,11 +298,7 @@ impl Crypt for PlayFairKey {
     }
 
     fn playload(&self, payload: &str) -> String {
-        if self.row_len == 4 {
-            PlayFairKey::payload_5_to_5(payload)
-        } else {
-            PlayFairKey::payload_6_to_6(payload)
-        }
+        (self.fptr)(payload)
     }
 }
 
