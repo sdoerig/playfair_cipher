@@ -51,7 +51,7 @@ stealthy - no error is raised.
 
 # Benchmarking
 
-The library can be benchmarked using [criterion]{https://crates.io/crates/criterion}. Benchmarked are all 
+The library can be benchmarked using [criterion](https://crates.io/crates/criterion). Benchmarked are all 
 ciphers - encryption and decryption aswell. For any benchmark a randomly generated string of 20000 characters 
 is used. To benchmark just
 
