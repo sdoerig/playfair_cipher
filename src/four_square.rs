@@ -36,6 +36,17 @@ pub struct FourSquare {
 }
 
 impl FourSquare {
+    /// Constructs a new Four square cipher based on a
+    /// 5 to 5 square. J is replaced by I, no digits. Passkeys can only
+    /// contain A-I and K-Z. They should be choosen differntly.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use playfair_cipher::four_square::FourSquare as FourSquare;
+    ///
+    /// let pfc = FourSquare::new_5_to_5("Secret", "JamesBond");
+    /// ```
     pub fn new_5_to_5(key0: &str, key1: &str) -> Self {
         FourSquare {
             top_right: PlayFairKey::new_5_to_5(key0),
@@ -43,6 +54,18 @@ impl FourSquare {
             standard_key: PlayFairKey::new_5_to_5(""),
         }
     }
+
+    /// Constructs a new Four square cipher based on a
+    /// 6 to 6 square. A-Z and 0-9 are encryptable. Passkeys can only
+    /// contain A-Z and 0-9. They should be choosen differntly.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use playfair_cipher::four_square::FourSquare as FourSquare;
+    ///
+    /// let pfc = FourSquare::new_6_to_6("Secret123", "456JamesBond");
+    ///
     pub fn new_6_to_6(key0: &str, key1: &str) -> Self {
         FourSquare {
             top_right: PlayFairKey::new_6_to_6(key0),

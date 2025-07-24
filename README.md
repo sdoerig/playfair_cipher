@@ -32,8 +32,7 @@ Y Z 0 1 2 3
 4 5 6 7 8 9
 ```
 
-Only characters in the square can be encrypted, but with this square digits 0-9 and
-the character J is encryptable.
+With the 6 to 6 square the characters A-Z and 0-9 are encryptable.
 
 This charactersitics applies to the TwoSquare and the FourSquare cipher aswell. The only 
 differ in the number of squares used.
@@ -49,6 +48,16 @@ this library.
 To use the ciphers as they where intended to be used one must seed them with a passkey. Empty passkeys 
 are possible. Not encryptable characters in the passkey are removed again. Note the removement happends
 stealthy - no error is raised.
+
+# Benchmarking
+
+The library can be benchmarked using [criterion](https://crates.io/crates/criterion). Benchmarked are all 
+ciphers - encryption and decryption aswell. For any benchmark a randomly generated string of 20000 characters 
+is used. To benchmark just
+
+```bash
+cargo bench
+```
 
 # Playfair Cipher
 Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_cipher) - nothing special, nothing useful, just for fun. 
