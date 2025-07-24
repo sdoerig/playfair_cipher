@@ -32,7 +32,9 @@ pub struct PlayFairKey {
 }
 
 impl PlayFairKey {
-    /// Constructs a new PlayFaire cipher.
+    /// Constructs a new PlayFaire cipher based on a
+    /// 5 to 5 square. J is replaced by I, no digits. Passkey can only
+    /// contain A-I and K-Z.
     ///
     /// # Example
     ///
@@ -44,6 +46,18 @@ impl PlayFairKey {
     pub fn new_5_to_5(key: &str) -> Self {
         create_play_fair_key(key, KEY_CARS)
     }
+
+    /// Constructs a new PlayFaire cipher based on a
+    /// 6 to 6 square. A-Z and 0-9 are encryptable too.
+    /// Passkey can contain A-Z and 0-9.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
+    ///
+    /// let pfc = PlayFairKey::new_6_to_6("Secret");
+    /// ```
     pub fn new_6_to_6(key: &str) -> Self {
         create_play_fair_key(key, KEY_CARS_A_TO_Z_0_TO_9)
     }
