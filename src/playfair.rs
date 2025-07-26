@@ -2,7 +2,7 @@
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
 //!
-use crate::cryptable::{Crypt, Cypher};
+use crate::cryptable::{Cipher, Crypt};
 use crate::errors::CharNotInKeyError;
 
 use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
@@ -17,7 +17,7 @@ use std::collections::HashMap;
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-/// Struct represents a PlayFaire Cypher. It's holding the key and the
+/// Struct represents a PlayFaire Cipher. It's holding the key and the
 /// position of any character in the key.
 ///
 #[derive(Debug)]
@@ -316,7 +316,7 @@ impl Crypt for PlayFairKey {
     }
 }
 
-impl Cypher for PlayFairKey {
+impl Cipher for PlayFairKey {
     /// Encrypts a string. Note as the PlayFair cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
