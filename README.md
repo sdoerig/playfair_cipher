@@ -69,7 +69,7 @@ Implementation of the [PlayFair cipher](https://en.wikipedia.org/wiki/Playfair_c
 
 ```rust
 use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let pfc = PlayFairKey::new_5_to_5("playfair example");
 match pfc.encrypt("hide the gold in the tree stump") {
@@ -84,7 +84,7 @@ match pfc.encrypt("hide the gold in the tree stump") {
 
 ```rust
 use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
 match pfc.encrypt("hide the gold in the tree stump at 5 o'clock.") {
@@ -102,7 +102,7 @@ match pfc.encrypt("hide the gold in the tree stump at 5 o'clock.") {
 ```rust
 use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
 use playfair_cipher::errors::CharNotInKeyError as CharNotInKeyError;
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let pfc = PlayFairKey::new_5_to_5("playfair example");
 match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
@@ -116,7 +116,7 @@ match pfc.decrypt("BMODZBXDNABEKUDMUIXMMOUVIF") {
 ### Example 6 to 6
 ```rust
 use playfair_cipher::{playfair::PlayFairKey, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let pfc = PlayFairKey::new_6_to_6("play 3645 fair 8760 example");
 match pfc.decrypt("SXG0SJGQW5H5OUGX2MXMXQUN733Q0WDPNDHB") {
@@ -137,7 +137,7 @@ Implementation of the [TwoSquare cipher](https://en.wikipedia.org/wiki/Two-squar
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;;
+use playfair_cipher::cryptable::Cipher;;
 
 let tsq = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 match tsq.encrypt("joe") {
@@ -151,7 +151,7 @@ match tsq.encrypt("joe") {
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;;
+use playfair_cipher::cryptable::Cipher;;
 
 let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
 match tsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
@@ -168,7 +168,7 @@ match tsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
  
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let tsq = TwoSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 match tsq.decrypt("NYMT") {
@@ -182,7 +182,7 @@ match tsq.decrypt("NYMT") {
 
 ```rust
 use playfair_cipher::{two_square::TwoSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;;
+use playfair_cipher::cryptable::Cipher;;
 
 let tsq = TwoSquare::new_6_to_6("EXAMPLE", "KEYWORD");
 match tsq.decrypt("CKNWEBMPEYAPRJLX01WYXJNTKOVLE0") {
@@ -204,7 +204,7 @@ As described at <https://en.wikipedia.org/wiki/Four-square_cipher>
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 match fsq.encrypt("joe") {
@@ -219,7 +219,7 @@ match fsq.encrypt("joe") {
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
 match fsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
@@ -237,7 +237,7 @@ match fsq.encrypt("Ben Wade takes the 3:10 train to Yuma.") {
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let fsq = FourSquare::new_5_to_5("EXAMPLE", "KEYWORD");
 match fsq.decrypt("DIAZ") {
@@ -251,7 +251,7 @@ match fsq.decrypt("DIAZ") {
 
 ```rust
 use playfair_cipher::{four_square::FourSquare, errors::CharNotInKeyError};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 
 let fsq = FourSquare::new_6_to_6("EXAMPLE", "KEYWORD");
 match fsq.decrypt("PEOQMKXUPDEUSAL201WIADJQI0RJLP") {

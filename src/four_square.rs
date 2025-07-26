@@ -3,7 +3,7 @@
 //!
 
 use crate::{
-    cryptable::{Crypt, Cypher},
+    cryptable::{Cipher, Crypt},
     errors::CharNotInKeyError,
     playfair::EMPTY_SQ_POS,
     structs::{CryptModus, CryptResult, Payload},
@@ -165,7 +165,7 @@ impl Crypt for FourSquare {
     }
 }
 
-impl Cypher for FourSquare {
+impl Cipher for FourSquare {
     /// Encrypts a string. Note as the Four Square cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///

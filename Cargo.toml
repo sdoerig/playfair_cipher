@@ -1,10 +1,12 @@
 [package]
 name = "playfair_cipher"
 authors = ["Stefan Dörig <sdoerig@bluewin.ch>"]
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 license = "AGPL-3.0-or-later"
 description = "Implementation of Playfair, Two square and Four square cipher"
+documentation = "https://docs.rs/playfair_cipher"
+categories = ["cryptography"]
 homepage = "https://github.com/sdoerig/playfair_cipher"
 repository = "https://github.com/sdoerig/playfair_cipher"
 keywords = ["Cipher", "Playfair", "Cryptography", "Four_square", "Two_square"]

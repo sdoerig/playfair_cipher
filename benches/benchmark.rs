@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 use criterion::{criterion_group, criterion_main, Criterion};
-use playfair_cipher::cryptable::Cypher;
+use playfair_cipher::cryptable::Cipher;
 use playfair_cipher::{four_square::FourSquare, playfair::PlayFairKey, two_square::TwoSquare};
 use rand::Rng;
 use std::hint::black_box;

@@ -3,7 +3,7 @@
 //!
 
 use crate::{
-    cryptable::{Crypt, Cypher},
+    cryptable::{Cipher, Crypt},
     errors::CharNotInKeyError,
     playfair::EMPTY_SQ_POS,
     structs::{CryptModus, CryptResult, Payload},
@@ -61,7 +61,7 @@ impl TwoSquare {
     /// use playfair_cipher::two_square::TwoSquare as TwoSquare;
     ///
     /// let pfc = TwoSquare::new_6_to_6("Secret123", "456JamesBond");
-    /// ``
+    /// ```
     pub fn new_6_to_6(key0: &str, key1: &str) -> Self {
         TwoSquare {
             top: PlayFairKey::new_6_to_6(key0),
@@ -145,7 +145,7 @@ impl Crypt for TwoSquare {
     }
 }
 
-impl Cypher for TwoSquare {
+impl Cipher for TwoSquare {
     /// Encrypts a string. Note as the Two Square cipher is only able to encrypt the
     /// characters A-I and L-Z any spaces and J are cleared off.
     ///
