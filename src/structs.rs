@@ -18,8 +18,8 @@ pub(crate) struct SquarePosition {
 }
 
 pub(crate) struct CryptResult {
-    pub a: char,
-    pub b: char,
+    pub a: String,
+    pub b: String,
 }
 
 pub(crate) struct Payload {
@@ -53,7 +53,7 @@ impl Payload {
                 Some(d) => d,
                 None => break,
             };
-            match cipher.crypt(a, b, modus) {
+            match cipher.crypt(&a, &b, modus) {
                 Ok(digram_crypt) => {
                     payload_encrypted += &String::from(digram_crypt.a);
                     payload_encrypted += &String::from(digram_crypt.b);
@@ -66,7 +66,7 @@ impl Payload {
 }
 
 impl Iterator for Payload {
-    type Item = [char; 2];
+    type Item = [String; 2];
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.counter < self.payload.len() {
@@ -80,16 +80,16 @@ impl Iterator for Payload {
             //&payload[counter + 1..counter + 2];
             if first_member == second_member {
                 // first and second are the same, so stuff it
-                let char_list: Vec<char> = first_member.chars().collect();
+                let char_list: Vec<String> = vec![String::from(first_member)];
 
                 self.counter += 1;
-                Some([char_list[0], 'X'])
+                Some([String::from(first_member), String::from("X")])
             } else {
                 let char_list_first: Vec<char> = first_member.chars().collect();
                 let char_list_second: Vec<char> = second_member.chars().collect();
 
                 self.counter += 2;
-                Some([char_list_first[0], char_list_second[0]])
+                Some([String::from(first_member), String::from(second_member)])
             }
         } else {
             None

@@ -73,8 +73,8 @@ impl TwoSquare {
 impl Crypt for TwoSquare {
     fn crypt(
         &self,
-        a: char,
-        b: char,
+        a: &str,
+        b: &str,
         _modus: &crate::structs::CryptModus,
     ) -> Result<crate::structs::CryptResult, crate::errors::CharNotInKeyError> {
         // E X A M P
@@ -93,11 +93,11 @@ impl Crypt for TwoSquare {
         // Ciphertext: HE CM XW SR KY XP HW NO DG
         //
 
-        let a_sq_pos = match self.top.key_map.get(&a) {
+        let a_sq_pos = match self.top.key_map.get(a) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
-        let b_sq_pos = match self.bottom.key_map.get(&b) {
+        let b_sq_pos = match self.bottom.key_map.get(b) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
@@ -117,16 +117,16 @@ impl Crypt for TwoSquare {
             b_sq_pos.row * self.top.square + a_sq_pos.column,
         );
         let a_crypted = match self.top.key.get(a_crypted_idx as usize) {
-            Some(s) => *s,
-            None => '*',
+            Some(s) => s,
+            None => &String::from("*"),
         };
         let b_crypted = match self.bottom.key.get(b_crypted_idx as usize) {
-            Some(s) => *s,
-            None => '*',
+            Some(s) => s,
+            None => &String::from("*"),
         };
         Ok(CryptResult {
-            a: a_crypted,
-            b: b_crypted,
+            a: a_crypted.clone(),
+            b: b_crypted.clone(),
         })
     }
 
@@ -247,15 +247,15 @@ mod tests {
         assert!(
             two_square.top.key
                 == vec![
-                    'E', 'X', 'A', 'M', 'P', 'L', 'B', 'C', 'D', 'F', 'G', 'H', 'I', 'K', 'N', 'O',
-                    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y', 'Z'
+                    "E", "X", "A", "M", "P", "L", "B", "C", "D", "F", "G", "H", "I", "K", "N", "O",
+                    "Q", "R", "S", "T", "U", "V", "W", "Y", "Z"
                 ]
         );
         assert!(
             two_square.bottom.key
                 == vec![
-                    'K', 'E', 'Y', 'W', 'O', 'R', 'D', 'A', 'B', 'C', 'F', 'G', 'H', 'I', 'L', 'M',
-                    'N', 'P', 'Q', 'S', 'T', 'U', 'V', 'X', 'Z'
+                    "K", "E", "Y", "W", "O", "R", "D", "A", "B", "C", "F", "G", "H", "I", "L", "M",
+                    "N", "P", "Q", "S", "T", "U", "V", "X", "Z"
                 ]
         );
     }

@@ -17,15 +17,15 @@ use std::collections::HashMap;
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-/// Struct represents a PlayFaire Cipher. It's holding the key and the
+/// Struct represents a PlayFaire Cipher. It"s holding the key and the
 /// position of any character in the key.
 ///
 #[derive(Debug)]
 pub struct PlayFairKey {
     /// PlayFair 5*5 matrix
     ///
-    pub(crate) key: Vec<char>,
-    pub(crate) key_map: HashMap<char, SquarePosition>,
+    pub(crate) key: Vec<String>,
+    pub(crate) key_map: HashMap<String, SquarePosition>,
     pub(crate) row_len: u8,
     pub(crate) square: u8,
     fptr: fn(&str) -> String,
@@ -105,6 +105,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
     let raw_key: String = key.to_uppercase() + key_chars;
 
     let mut temp_key = String::with_capacity(key_chars.len());
+    let mut key_list: Vec<String> = Vec::new();
 
     let row_len = match key_chars.len() {
         25 => 4,
@@ -120,7 +121,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
     // imaginary 5*5 square. So to be consistent, it start from 0
     let mut row_counter = 0;
     let mut col_counter = 0;
-    let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+    let mut key_map: HashMap<String, SquarePosition> = HashMap::new();
 
     while counter < raw_key.len() && temp_key.len() < key_chars.len() {
         if col_counter > row_len {
@@ -134,24 +135,22 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
             continue;
         } else {
             temp_key += temp_key_char;
-            let temp_key_char_vec: Vec<char> = temp_key_char.chars().collect();
+            let temp_key_char_vec = temp_key_char;
 
             key_map.insert(
-                match temp_key_char_vec.first() {
-                    Some(k) => *k,
-                    None => '*',
-                },
+                temp_key_char.to_string(),
                 SquarePosition {
                     row: row_counter,
                     column: col_counter,
                 },
             );
+            key_list.push(temp_key_char.to_string());
             col_counter += 1;
         }
     }
 
     PlayFairKey {
-        key: temp_key.chars().collect(),
+        key: key_list,
         key_map,
         row_len,
         square: row_len + 1,
@@ -162,26 +161,26 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
 impl Crypt for PlayFairKey {
     fn crypt(
         &self,
-        a: char,
-        b: char,
+        a: &str,
+        b: &str,
         modus: &CryptModus,
     ) -> Result<CryptResult, CharNotInKeyError> {
-        let a_sq_pos = match self.key_map.get(&a) {
+        let a_sq_pos = match self.key_map.get(a) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
-        let b_sq_pos = match self.key_map.get(&b) {
+        let b_sq_pos = match self.key_map.get(b) {
             Some(p) => p,
             None => EMPTY_SQ_POS,
         };
         if a_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
-                "Only chars A-Z possible - '{}' was not found in key {:?}",
+                "Only chars A-Z possible - {} was not found in key {:?}",
                 a, &self.key
             )));
         } else if b_sq_pos.column == EMPTY_SQ_POS.column {
             return Err(CharNotInKeyError::new(format!(
-                "Only chars A-Z possible - '{}' was not found in key {:?}",
+                "Only chars A-Z possible - {} was not found in key {:?}",
                 b, &self.key
             )));
         }
@@ -287,17 +286,17 @@ impl Crypt for PlayFairKey {
                 }
             }
         }
-        let a_crypted: char = match self.key.get(a_crypted_idx as usize) {
-            Some(c) => *c,
-            None => '*',
+        let a_crypted = match self.key.get(a_crypted_idx as usize) {
+            Some(c) => c,
+            None => &String::from("*"),
         };
-        let b_crypted: char = match self.key.get(b_crypted_idx as usize) {
-            Some(c) => *c,
-            None => '*',
+        let b_crypted = match self.key.get(b_crypted_idx as usize) {
+            Some(c) => c,
+            None => &String::from("*"),
         };
         Ok(CryptResult {
-            a: a_crypted,
-            b: b_crypted,
+            a: a_crypted.clone(),
+            b: b_crypted.clone(),
         })
     }
 
@@ -421,8 +420,8 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-                'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "O", "P", "Q",
+                "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
             ]
         )
     }
@@ -433,9 +432,9 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5',
-                '6', '7', '8', '9'
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+                "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5",
+                "6", "7", "8", "9"
             ]
         )
     }
@@ -446,8 +445,8 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'S', 'I', 'M', 'P', 'L', 'E', 'A', 'B', 'C', 'D', 'F', 'G', 'H', 'K', 'N', 'O',
-                'Q', 'R', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+                "S", "I", "M", "P", "L", "E", "A", "B", "C", "D", "F", "G", "H", "K", "N", "O",
+                "Q", "R", "T", "U", "V", "W", "X", "Y", "Z"
             ]
         )
     }
@@ -458,8 +457,8 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'S', 'E', 'C', 'R', 'T', 'I', 'A', 'B', 'D', 'F', 'G', 'H', 'K', 'L', 'M', 'N',
-                'O', 'P', 'Q', 'U', 'V', 'W', 'X', 'Y', 'Z'
+                "S", "E", "C", "R", "T", "I", "A", "B", "D", "F", "G", "H", "K", "L", "M", "N",
+                "O", "P", "Q", "U", "V", "W", "X", "Y", "Z"
             ]
         )
     }
@@ -470,9 +469,9 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'S', 'E', 'C', 'R', 'T', 'I', 'J', 'A', 'B', 'D', 'F', 'G', 'H', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5',
-                '6', '7', '8', '9'
+                "S", "E", "C", "R", "T", "I", "J", "A", "B", "D", "F", "G", "H", "K", "L", "M",
+                "N", "O", "P", "Q", "U", "V", "W", "X", "Y", "Z", "0", "1", "2", "3", "4", "5",
+                "6", "7", "8", "9"
             ]
         )
     }
@@ -483,8 +482,8 @@ mod tests {
         assert_eq!(
             pfk.key,
             vec![
-                'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K',
-                'I', 'H', 'G', 'F', 'E', 'C', 'A', 'B', 'D'
+                "Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K",
+                "I", "H", "G", "F", "E", "C", "A", "B", "D"
             ]
         )
     }
@@ -493,7 +492,7 @@ mod tests {
     fn test_iterator() {
         let pfk = PlayFairKey::new_5_to_5("key");
         let mut payload = Payload::new(pfk.payload("my secret message"));
-        let mut digrams: Vec<[char; 2]> = Vec::new();
+        let mut digrams: Vec<[String; 2]> = Vec::new();
 
         loop {
             let digram = payload.next();
@@ -506,14 +505,14 @@ mod tests {
         assert_eq!(
             digrams,
             vec![
-                ['M', 'Y'],
-                ['S', 'E'],
-                ['C', 'R'],
-                ['E', 'T'],
-                ['M', 'E'],
-                ['S', 'X'],
-                ['S', 'A'],
-                ['G', 'E']
+                ["M", "Y"],
+                ["S", "E"],
+                ["C", "R"],
+                ["E", "T"],
+                ["M", "E"],
+                ["S", "X"],
+                ["S", "A"],
+                ["G", "E"]
             ]
         );
     }
@@ -587,22 +586,22 @@ mod tests {
     fn test_crypt_square() {
         // as described under https://en.wikipedia.org/wiki/Playfair_cipher Example 1
         let pfc = PlayFairKey::new_5_to_5("playfair example");
-        match pfc.crypt('H', 'I', &CryptModus::Encrypt) {
+        match pfc.crypt("H", "I", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
-                assert_eq!(digram_crypt.a, 'B');
-                assert_eq!(digram_crypt.b, 'M');
+                assert_eq!(digram_crypt.a, "B");
+                assert_eq!(digram_crypt.b, "M");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('B', 'M', &CryptModus::Decrypt) {
+        match pfc.crypt("B", "M", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(
-                    digram_crypt.a, 'H',
+                    digram_crypt.a, "H",
                     "decrypt B failed - transformed to {} key {:?}",
                     digram_crypt.a, pfc.key
                 );
                 assert_eq!(
-                    digram_crypt.b, 'I',
+                    digram_crypt.b, "I",
                     "decrypt M failed - transformed to {} ",
                     digram_crypt.b
                 );
@@ -615,31 +614,31 @@ mod tests {
     fn test_crypt_column() {
         let pfc = PlayFairKey::new_5_to_5("playfair example");
 
-        match pfc.crypt('D', 'E', &CryptModus::Encrypt) {
+        match pfc.crypt("D", "E", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
-                assert_eq!(digram_crypt.a, 'O');
-                assert_eq!(digram_crypt.b, 'D');
+                assert_eq!(digram_crypt.a, "O");
+                assert_eq!(digram_crypt.b, "D");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('O', 'D', &CryptModus::Decrypt) {
+        match pfc.crypt("O", "D", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
-                assert_eq!(digram_crypt.a, 'D');
-                assert_eq!(digram_crypt.b, 'E');
+                assert_eq!(digram_crypt.a, "D");
+                assert_eq!(digram_crypt.b, "E");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('A', 'V', &CryptModus::Encrypt) {
+        match pfc.crypt("A", "V", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
-                assert_eq!(digram_crypt.a, 'E');
-                assert_eq!(digram_crypt.b, 'A');
+                assert_eq!(digram_crypt.a, "E");
+                assert_eq!(digram_crypt.b, "A");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('E', 'A', &CryptModus::Decrypt) {
+        match pfc.crypt("E", "A", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
-                assert_eq!(digram_crypt.a, 'A');
-                assert_eq!(digram_crypt.b, 'V', "A transforms to {}", digram_crypt.b);
+                assert_eq!(digram_crypt.a, "A");
+                assert_eq!(digram_crypt.b, "V", "A transforms to {}", digram_crypt.b);
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
@@ -649,47 +648,47 @@ mod tests {
     fn test_crypt_row() {
         let pfc = PlayFairKey::new_5_to_5("playfair example");
 
-        match pfc.crypt('E', 'X', &CryptModus::Encrypt) {
+        match pfc.crypt("E", "X", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(
-                    digram_crypt.a, 'X',
+                    digram_crypt.a, "X",
                     "E transfers to {} key {:?}",
                     digram_crypt.a, pfc.key
                 );
-                assert_eq!(digram_crypt.b, 'M');
+                assert_eq!(digram_crypt.b, "M");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('X', 'M', &CryptModus::Decrypt) {
+        match pfc.crypt("X", "M", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(
-                    digram_crypt.a, 'E',
+                    digram_crypt.a, "E",
                     "X transfers to {} key {:?}",
                     digram_crypt.a, pfc.key
                 );
-                assert_eq!(digram_crypt.b, 'X');
+                assert_eq!(digram_crypt.b, "X");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('I', 'M', &CryptModus::Encrypt) {
+        match pfc.crypt("I", "M", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(
-                    digram_crypt.a, 'R',
+                    digram_crypt.a, "R",
                     "I transfers to {} key {:?}",
                     digram_crypt.a, pfc.key
                 );
-                assert_eq!(digram_crypt.b, 'I');
+                assert_eq!(digram_crypt.b, "I");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };
-        match pfc.crypt('R', 'I', &CryptModus::Decrypt) {
+        match pfc.crypt("R", "I", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(
-                    digram_crypt.a, 'I',
+                    digram_crypt.a, "I",
                     "R transfers to {} key {:?}",
                     digram_crypt.a, pfc.key
                 );
-                assert_eq!(digram_crypt.b, 'M');
+                assert_eq!(digram_crypt.b, "M");
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };

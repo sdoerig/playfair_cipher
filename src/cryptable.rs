@@ -21,7 +21,7 @@ pub(crate) trait Crypt {
 
     /// This method implements the lookup a all the processing within the modul.
     /// It is called by Payload iterator.
-    fn crypt(&self, a: char, b: char, modus: &CryptModus)
+    fn crypt(&self, a: &str, b: &str, modus: &CryptModus)
         -> Result<CryptResult, CharNotInKeyError>;
 
     /// Ensures only characters contained in the square are present. It
