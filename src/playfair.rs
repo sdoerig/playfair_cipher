@@ -14,8 +14,10 @@ pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
 
 use std::collections::HashMap;
 
-const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
-const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const KEY_CHARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
+const KEY_CHARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const KEY_EMOTJI_6_TO_6: &str =
+    "😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳🙂‍↕️";
 
 /// Struct represents a PlayFaire Cipher. It"s holding the key and the
 /// position of any character in the key.
@@ -26,8 +28,8 @@ pub struct PlayFairKey {
     ///
     pub(crate) key: Vec<String>,
     pub(crate) key_map: HashMap<String, SquarePosition>,
-    pub(crate) row_len: u8,
-    pub(crate) square: u8,
+    pub(crate) row_len: usize,
+    pub(crate) square: usize,
     fptr: fn(&str) -> String,
 }
 
@@ -44,7 +46,7 @@ impl PlayFairKey {
     /// let pfc = PlayFairKey::new_5_to_5("Secret");
     /// ```
     pub fn new_5_to_5(key: &str) -> Self {
-        create_play_fair_key(key, KEY_CARS)
+        create_play_fair_key(key, KEY_CHARS)
     }
 
     /// Constructs a new PlayFaire cipher based on a
@@ -59,7 +61,21 @@ impl PlayFairKey {
     /// let pfc = PlayFairKey::new_6_to_6("Secret");
     /// ```
     pub fn new_6_to_6(key: &str) -> Self {
-        create_play_fair_key(key, KEY_CARS_A_TO_Z_0_TO_9)
+        create_play_fair_key(key, KEY_CHARS_A_TO_Z_0_TO_9)
+    }
+    /// Constructs a new PlayFaire cipher based on a
+    /// 6 to 6 square. A-Z and 0-9 are encryptable too.
+    /// Passkey can contain A-Z and 0-9.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use playfair_cipher::playfair::PlayFairKey as PlayFairKey;
+    ///
+    /// let pfc = PlayFairKey::new_6_to_6("Secret");
+    /// ```
+    pub fn new_emotji_6_to_6(key: &str) -> Self {
+        create_play_fair_key(key, KEY_EMOTJI_6_TO_6)
     }
 
     pub(crate) fn payload(&self, payload: &str) -> String {
@@ -71,15 +87,15 @@ impl PlayFairKey {
     }
 
     fn payload_6_to_6(payload: &str) -> String {
-        let mut counter: usize = 0;
+        //let mut counter: usize = 0;
         let mut payload_cleared = String::with_capacity(payload.len());
         let payload_uc = payload.to_uppercase();
-        while counter < payload_uc.len() {
-            let character = &payload_uc[counter..counter + 1];
+        for character in payload_uc.split("") {
+            //let character = &payload_uc[counter..counter + 1];
             if ("A"..="Z").contains(&character) || ("0"..="9").contains(&character) {
                 payload_cleared += character;
             }
-            counter += 1;
+            //counter += 1;
         }
         payload_cleared
     }
@@ -103,11 +119,9 @@ impl PlayFairKey {
 
 fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
     let raw_key: String = key.to_uppercase() + key_chars;
-
-    let mut temp_key = String::with_capacity(key_chars.len());
     let mut key_list: Vec<String> = Vec::new();
 
-    let row_len = match key_chars.len() {
+    let row_len: usize = match key_chars.len() {
         25 => 4,
         _ => 5,
     };
@@ -116,35 +130,28 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
         _ => PlayFairKey::payload_6_to_6,
     };
 
-    let mut counter = 0;
     // Position counter reflects the position in the
     // imaginary 5*5 square. So to be consistent, it start from 0
     let mut row_counter = 0;
     let mut col_counter = 0;
     let mut key_map: HashMap<String, SquarePosition> = HashMap::new();
-
-    while counter < raw_key.len() && temp_key.len() < key_chars.len() {
+    for token in raw_key.split("") {
         if col_counter > row_len {
             col_counter = 0;
             row_counter += 1;
         }
-
-        let temp_key_char = &raw_key[counter..counter + 1];
-        counter += 1;
-        if temp_key.contains(temp_key_char) || !key_chars.contains(temp_key_char) {
+        if key_map.contains_key(token) || !key_chars.contains(token) || token.is_empty() {
             continue;
         } else {
-            temp_key += temp_key_char;
-            let temp_key_char_vec = temp_key_char;
+            key_list.push(token.to_string());
 
             key_map.insert(
-                temp_key_char.to_string(),
+                token.to_string(),
                 SquarePosition {
                     row: row_counter,
                     column: col_counter,
                 },
             );
-            key_list.push(temp_key_char.to_string());
             col_counter += 1;
         }
     }
@@ -184,8 +191,8 @@ impl Crypt for PlayFairKey {
                 b, &self.key
             )));
         }
-        let mut a_crypted_idx: u8 = 0;
-        let mut b_crypted_idx: u8 = 0;
+        let mut a_crypted_idx: usize = 0;
+        let mut b_crypted_idx: usize = 0;
         if a_sq_pos.column != b_sq_pos.column && a_sq_pos.row != b_sq_pos.row {
             // in square mode
             // example 1:
@@ -286,11 +293,11 @@ impl Crypt for PlayFairKey {
                 }
             }
         }
-        let a_crypted = match self.key.get(a_crypted_idx as usize) {
+        let a_crypted = match self.key.get(a_crypted_idx) {
             Some(c) => c,
             None => &String::from("*"),
         };
-        let b_crypted = match self.key.get(b_crypted_idx as usize) {
+        let b_crypted = match self.key.get(b_crypted_idx) {
             Some(c) => c,
             None => &String::from("*"),
         };
@@ -414,6 +421,14 @@ mod tests {
         // becomes "IWOULDLIKETINSOFIAM"
     }
 
+    /**#[test]
+        fn test_payload_6_to_6_emotji() {
+            let pfk = PlayFairKey::new_emotji_6_to_6("");
+            let payload = Payload::new(pfk.payload("😀😃😄😁😆😅😂🤣🥲🥹☺️🤠😈👿👹"));
+            assert_eq!(payload.payload, "😀😃😄😁😆😅😂🤣🥲🥹☺️");
+            // becomes "IWOULDLIKETINSOFIAM"
+        }
+    */
     #[test]
     fn test_key_gen_empty_key() {
         let pfk = PlayFairKey::new_5_to_5("");

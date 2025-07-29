@@ -134,13 +134,13 @@ impl Crypt for FourSquare {
                 b, &self.bottom_left.key
             )));
         }
-        let a_crypted_idx: u8 = a_sq_pos.row * self.standard_key.square + b_sq_pos.column;
-        let b_crypted_idx: u8 = b_sq_pos.row * self.standard_key.square + a_sq_pos.column;
-        let a_crypted = match top_left_key.get(a_crypted_idx as usize) {
+        let a_crypted_idx = a_sq_pos.row * self.standard_key.square + b_sq_pos.column;
+        let b_crypted_idx = b_sq_pos.row * self.standard_key.square + a_sq_pos.column;
+        let a_crypted = match top_left_key.get(a_crypted_idx) {
             Some(s) => s,
             None => &String::from("*"),
         };
-        let b_crypted = match bottom_right_key.get(b_crypted_idx as usize) {
+        let b_crypted = match bottom_right_key.get(b_crypted_idx) {
             Some(s) => s,
             None => &String::from("*"),
         };

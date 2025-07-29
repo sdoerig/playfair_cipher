@@ -13,8 +13,8 @@ use crate::cryptable::Crypt;
 //  row 4 _ _ _ _ _
 #[derive(Debug)]
 pub(crate) struct SquarePosition {
-    pub row: u8,
-    pub column: u8,
+    pub row: usize,
+    pub column: usize,
 }
 
 pub(crate) struct CryptResult {
