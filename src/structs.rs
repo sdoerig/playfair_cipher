@@ -1,3 +1,5 @@
+use std::collections::{hash_map, HashMap};
+
 use crate::cryptable::Crypt;
 
 // For each character from the key, its position within the imaged square stored in
@@ -22,6 +24,12 @@ pub(crate) struct CryptResult {
     pub b: String,
 }
 
+#[derive(Debug)]
+pub struct Tokens {
+    pub(crate) tokens: String,
+    tokens_replaced_by: HashMap<String, String>,
+}
+
 pub(crate) struct Payload {
     pub payload: String,
     pub counter: usize,
@@ -31,6 +39,34 @@ pub(crate) struct Payload {
 pub(crate) enum CryptModus {
     Encrypt,
     Decrypt,
+}
+
+impl Tokens {
+    pub fn new(tokens: &str, tokens_replaced_by: HashMap<String, String>) -> Self {
+        Tokens {
+            tokens: tokens.to_string(),
+            tokens_replaced_by,
+        }
+    }
+
+    pub(crate) fn payload(&self, payload: &str) -> String {
+        //let mut counter: usize = 0;
+        let mut payload_cleared = String::with_capacity(payload.len());
+        let payload_uc = payload.to_uppercase();
+        for character in payload_uc.split("") {
+            let character_replaced = match self.tokens_replaced_by.get(character) {
+                Some(s) => s,
+                None => character,
+            };
+
+            //let character = &payload_uc[counter..counter + 1];
+            if self.tokens.contains(character_replaced) {
+                payload_cleared += character_replaced;
+            }
+            //counter += 1;
+        }
+        payload_cleared
+    }
 }
 
 impl Payload {

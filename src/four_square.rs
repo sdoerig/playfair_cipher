@@ -161,7 +161,7 @@ impl Crypt for FourSquare {
     }
 
     fn playload(&self, payload: &str) -> String {
-        self.bottom_left.payload(payload)
+        self.bottom_left.tokens.payload(payload)
     }
 }
 

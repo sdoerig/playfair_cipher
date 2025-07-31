@@ -141,7 +141,7 @@ impl Crypt for TwoSquare {
     }
 
     fn playload(&self, payload: &str) -> String {
-        self.top.payload(payload)
+        self.top.tokens.payload(payload)
     }
 }
 
