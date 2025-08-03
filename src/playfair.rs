@@ -48,7 +48,7 @@ impl PlayFairKey {
     pub fn new_5_to_5(key: &str) -> Self {
         let mut tokens_replaced_by: HashMap<String, String> = HashMap::new();
         tokens_replaced_by.insert("J".to_string(), "I".to_string());
-        create_play_fair_key(key, Tokens::new(KEY_CHARS, tokens_replaced_by))
+        create_play_fair_key(key, Tokens::new(KEY_CHARS, tokens_replaced_by, "", ""))
     }
 
     /// Constructs a new PlayFaire cipher based on a
@@ -66,7 +66,7 @@ impl PlayFairKey {
         let tokens_replaced_by: HashMap<String, String> = HashMap::new();
         create_play_fair_key(
             key,
-            Tokens::new(KEY_CHARS_A_TO_Z_0_TO_9, tokens_replaced_by),
+            Tokens::new(KEY_CHARS_A_TO_Z_0_TO_9, tokens_replaced_by, "", ""),
         )
     }
     /// Constructs a new PlayFaire cipher based on a
@@ -82,7 +82,10 @@ impl PlayFairKey {
     /// ```
     pub fn new_emotji_6_to_6(key: &str) -> Self {
         let tokens_replaced_by: HashMap<String, String> = HashMap::new();
-        create_play_fair_key(key, Tokens::new(KEY_EMOTJI_6_TO_6, tokens_replaced_by))
+        create_play_fair_key(
+            key,
+            Tokens::new(KEY_EMOTJI_6_TO_6, tokens_replaced_by, "", ""),
+        )
     }
 }
 
@@ -100,7 +103,7 @@ fn create_play_fair_key(key: &str, tokens: Tokens) -> PlayFairKey {
     let mut row_counter = 0;
     let mut col_counter = 0;
     let mut key_map: HashMap<String, SquarePosition> = HashMap::new();
-    for token in raw_key.split("") {
+    for token in raw_key.split(&tokens.split_by) {
         if col_counter > row_len {
             col_counter = 0;
             row_counter += 1;
@@ -505,7 +508,7 @@ mod tests {
         let pfx = PlayFairKey::new_5_to_5("secret");
         match pfx.encrypt("a") {
             Ok(s) => assert_eq!(s, "DV"),
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 
@@ -555,13 +558,11 @@ mod tests {
             };
             assert_eq!(
                 check_sqrt_pos.row, must_be_sqrt_pos.row,
-                "row assertion failed at iteration {}",
-                counter
+                "row assertion failed at iteration {counter}"
             );
             assert_eq!(
                 check_sqrt_pos.column, must_be_sqrt_pos.column,
-                "column assertion failed at iteration {}",
-                counter
+                "column assertion failed at iteration {counter}"
             );
         }
     }
@@ -575,7 +576,7 @@ mod tests {
                 assert_eq!(digram_crypt.a, "B");
                 assert_eq!(digram_crypt.b, "M");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("B", "M", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
@@ -590,7 +591,7 @@ mod tests {
                     digram_crypt.b
                 );
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 
@@ -603,28 +604,28 @@ mod tests {
                 assert_eq!(digram_crypt.a, "O");
                 assert_eq!(digram_crypt.b, "D");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("O", "D", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(digram_crypt.a, "D");
                 assert_eq!(digram_crypt.b, "E");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("A", "V", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(digram_crypt.a, "E");
                 assert_eq!(digram_crypt.b, "A");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("E", "A", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(digram_crypt.a, "A");
                 assert_eq!(digram_crypt.b, "V", "A transforms to {}", digram_crypt.b);
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 
@@ -641,7 +642,7 @@ mod tests {
                 );
                 assert_eq!(digram_crypt.b, "M");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("X", "M", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
@@ -652,7 +653,7 @@ mod tests {
                 );
                 assert_eq!(digram_crypt.b, "X");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("I", "M", &CryptModus::Encrypt) {
             Ok(digram_crypt) => {
@@ -663,7 +664,7 @@ mod tests {
                 );
                 assert_eq!(digram_crypt.b, "I");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
         match pfc.crypt("R", "I", &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
@@ -674,7 +675,7 @@ mod tests {
                 );
                 assert_eq!(digram_crypt.b, "M");
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 
@@ -685,7 +686,7 @@ mod tests {
             Ok(crypt) => {
                 assert_eq!(crypt, String::from("ETCUBRHP"));
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 
@@ -696,7 +697,7 @@ mod tests {
             Ok(crypt) => {
                 assert_eq!(crypt, String::from("cratesio").to_uppercase());
             }
-            Err(e) => panic!("CharNotInKeyError {}", e),
+            Err(e) => panic!("CharNotInKeyError {e}"),
         };
     }
 }

@@ -28,6 +28,8 @@ pub(crate) struct CryptResult {
 pub struct Tokens {
     pub(crate) tokens: String,
     tokens_replaced_by: HashMap<String, String>,
+    pub(crate) split_by: String,
+    padding: String,
 }
 
 pub(crate) struct Payload {
@@ -42,10 +44,17 @@ pub(crate) enum CryptModus {
 }
 
 impl Tokens {
-    pub fn new(tokens: &str, tokens_replaced_by: HashMap<String, String>) -> Self {
+    pub fn new(
+        tokens: &str,
+        tokens_replaced_by: HashMap<String, String>,
+        split_by: &str,
+        padding: &str,
+    ) -> Self {
         Tokens {
             tokens: tokens.to_string(),
             tokens_replaced_by,
+            split_by: split_by.to_string(),
+            padding: padding.to_string(),
         }
     }
 
