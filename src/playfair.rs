@@ -4,8 +4,8 @@
 //!
 use crate::cryptable::{Cipher, Crypt};
 use crate::errors::CharNotInKeyError;
-
 use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition, Tokens};
+use rustc_hash::FxHashMap;
 
 pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
     column: 42,
@@ -27,7 +27,7 @@ pub struct PlayFairKey {
     /// PlayFair 5*5 matrix
     ///
     pub(crate) key: Vec<String>,
-    pub(crate) key_map: HashMap<String, SquarePosition>,
+    pub(crate) key_map: FxHashMap<String, SquarePosition>,
     pub(crate) row_len: usize,
     pub(crate) square: usize,
     pub(crate) tokens: Tokens,
@@ -102,7 +102,7 @@ fn create_play_fair_key(key: &str, tokens: Tokens) -> PlayFairKey {
     // imaginary 5*5 square. So to be consistent, it start from 0
     let mut row_counter = 0;
     let mut col_counter = 0;
-    let mut key_map: HashMap<String, SquarePosition> = HashMap::new();
+    let mut key_map: FxHashMap<String, SquarePosition> = FxHashMap::default();
     for token in raw_key.split(&tokens.split_by) {
         if col_counter > row_len {
             col_counter = 0;
