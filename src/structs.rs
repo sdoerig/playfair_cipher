@@ -62,7 +62,7 @@ impl Tokens {
         //let mut counter: usize = 0;
         let mut payload_cleared = String::with_capacity(payload.len());
         let payload_uc = payload.to_uppercase();
-        for character in payload_uc.split("") {
+        for character in payload_uc.split(&self.split_by) {
             let character_replaced = match self.tokens_replaced_by.get(character) {
                 Some(s) => s,
                 None => character,
