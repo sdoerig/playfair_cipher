@@ -2,8 +2,10 @@
 //! <https://en.wikipedia.org/wiki/Playfair_cipher>
 //!
 //!
+//!
 use crate::cryptable::{Cipher, Crypt};
 use crate::errors::CharNotInKeyError;
+use rustc_hash::FxHashMap;
 
 use crate::structs::{CryptModus, CryptResult, Payload, SquarePosition};
 
@@ -25,7 +27,7 @@ pub struct PlayFairKey {
     /// PlayFair 5*5 matrix
     ///
     pub(crate) key: Vec<char>,
-    pub(crate) key_map: HashMap<char, SquarePosition>,
+    pub(crate) key_map: FxHashMap<char, SquarePosition>,
     pub(crate) row_len: u8,
     pub(crate) square: u8,
     fptr: fn(&str) -> String,
@@ -120,7 +122,7 @@ fn create_play_fair_key(key: &str, key_chars: &str) -> PlayFairKey {
     // imaginary 5*5 square. So to be consistent, it start from 0
     let mut row_counter = 0;
     let mut col_counter = 0;
-    let mut key_map: HashMap<char, SquarePosition> = HashMap::new();
+    let mut key_map: FxHashMap<char, SquarePosition> = FxHashMap::default();
 
     while counter < raw_key.len() && temp_key.len() < key_chars.len() {
         if col_counter > row_len {
