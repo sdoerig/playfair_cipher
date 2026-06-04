@@ -14,8 +14,6 @@ pub(crate) const EMPTY_SQ_POS: &SquarePosition = &SquarePosition {
     row: 42,
 };
 
-use std::collections::HashMap;
-
 const KEY_CARS: &str = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
 const KEY_CARS_A_TO_Z_0_TO_9: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -244,7 +242,7 @@ impl Crypt for PlayFairKey {
                     a_crypted_idx = (a_sq_pos.row - 1) * self.square + a_sq_pos.column;
                 }
                 if b_sq_pos.row == 0 {
-                    b_crypted_idx = 20 + b_sq_pos.column;
+                    b_crypted_idx = self.square * (self.row_len - 1) + b_sq_pos.column;
                 } else {
                     b_crypted_idx = (b_sq_pos.row - 1) * self.square + b_sq_pos.column;
                 }
@@ -406,15 +404,27 @@ mod tests {
     fn test_payload() {
         let pfk = PlayFairKey::new_5_to_5("");
         let payload = Payload::new(pfk.payload("I would like 4 tins of jam."));
-        assert_eq!(payload.payload, "IWOULDLIKETINSOFIAM");
+        assert_eq!(
+            payload.payload,
+            [
+                'I', 'W', 'O', 'U', 'L', 'D', 'L', 'I', 'K', 'E', 'T', 'I', 'N', 'S', 'O', 'F',
+                'I', 'A', 'M'
+            ]
+        );
         // becomes "IWOULDLIKETINSOFIAM"
     }
     #[test]
     fn test_payload_6_to_6() {
         let pfk = PlayFairKey::new_6_to_6("");
         let payload = Payload::new(pfk.payload("I would like 4 tins of jam."));
-        assert_eq!(payload.payload, "IWOULDLIKE4TINSOFJAM");
-        // becomes "IWOULDLIKETINSOFIAM"
+        assert_eq!(
+            payload.payload,
+            [
+                'I', 'W', 'O', 'U', 'L', 'D', 'L', 'I', 'K', 'E', '4', 'T', 'I', 'N', 'S', 'O',
+                'F', 'J', 'A', 'M'
+            ]
+        );
+        // becomes "IWOULDLIKE4TINSOFJAM"
     }
 
     #[test]
@@ -641,7 +651,7 @@ mod tests {
         match pfc.crypt('E', 'A', &CryptModus::Decrypt) {
             Ok(digram_crypt) => {
                 assert_eq!(digram_crypt.a, 'A');
-                assert_eq!(digram_crypt.b, 'V', "A transforms to {}", digram_crypt.b);
+                assert_eq!(digram_crypt.b, 'O', "A transforms to {}", digram_crypt.b);
             }
             Err(e) => panic!("CharNotInKeyError {}", e),
         };

@@ -23,7 +23,7 @@ pub(crate) struct CryptResult {
 }
 
 pub(crate) struct Payload {
-    pub payload: String,
+    pub payload: Vec<char>,
     pub counter: usize,
 }
 
@@ -36,7 +36,7 @@ pub(crate) enum CryptModus {
 impl Payload {
     pub(crate) fn new(payload: String) -> Self {
         Payload {
-            payload,
+            payload: payload.chars().collect(),
             counter: 0,
         }
     }
@@ -74,22 +74,17 @@ impl Iterator for Payload {
             // do not overrun string bounderies.
             let second_member = match self.counter + 2 <= self.payload.len() {
                 true => &self.payload[self.counter + 1..self.counter + 2],
-                false => "X",
+                false => &['X'],
             };
 
             //&payload[counter + 1..counter + 2];
             if first_member == second_member {
                 // first and second are the same, so stuff it
-                let char_list: Vec<char> = first_member.chars().collect();
-
                 self.counter += 1;
-                Some([char_list[0], 'X'])
+                Some([first_member[0], 'X'])
             } else {
-                let char_list_first: Vec<char> = first_member.chars().collect();
-                let char_list_second: Vec<char> = second_member.chars().collect();
-
                 self.counter += 2;
-                Some([char_list_first[0], char_list_second[0]])
+                Some([first_member[0], second_member[0]])
             }
         } else {
             None
